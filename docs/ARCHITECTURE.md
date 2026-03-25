@@ -12,7 +12,8 @@ El sistema se diseña como una aplicación backend basada en **Arquitectura Hexa
 
 El sistema permite gestionar vehículos, registrar kilometraje, definir reglas de mantenimiento y generar alertas basadas en dichas reglas.
 
-La comunicación interna del sistema es **sincrónica**, mientras que la emisión de eventos se realiza de forma **asíncrona mediante RabbitMQ**.
+La comunicación interna del sistema es **sincrónica**.
+La publicación de eventos hacia RabbitMQ es **asíncrona y fire-and-forget** (no bloquea el flujo principal).
 
 ---
 
@@ -30,12 +31,12 @@ El MVP incluye únicamente las siguientes capacidades:
 
 ### Decisiones del MVP
 
-* Arquitectura de microservicios ligeros, donde cada servicio implementa arquitectura hexagonal
-* Comunicación interna sincrónica
-* Publicación de eventos simple (sin outbox, sin retries avanzados)
+* Un único servicio Spring Boot con arquitectura hexagonal interna
+* Comunicación interna completamente sincrónica
+* Publicación de eventos simple hacia RabbitMQ (sin outbox, sin retries avanzados)
 * Sin seguridad
 * Persistencia con PostgreSQL
-* Uso de RabbitMQ para eventos de integración
+* RabbitMQ solo para emisión de eventos de salida, no para coordinar flujo interno
 
 ---
 
@@ -214,26 +215,41 @@ Implementar detalles técnicos.
 
 ---
 
-### 6.2 Generación de Alertas (decisión B)
+### 6.2 Generación de Alertas (HU-11)
 
-La generación de alertas se maneja mediante un caso de uso explícito:
-
-```
-GenerateAlertUseCase
-```
+La generación de alertas ocurre de forma **sincrónica** dentro del mismo flujo de registro de kilometraje.
+No existe un scheduler, proceso batch ni consumidor de eventos que dispare este proceso.
 
 Flujo:
 
-1. Se registra kilometraje
-2. Se ejecuta `GenerateAlertUseCase`
-3. Se evalúan reglas asociadas al tipo de vehículo
-4. Se generan alertas si corresponde
-5. Se persisten alertas
-6. Se emite evento (opcional)
+```
+POST /mileage
+    ↓
+RegisterMileageUseCase
+    ↓
+vehicle.registerMileage()        ← Domain: valida y actualiza km
+    ↓
+GenerateAlertUseCase             ← llamada directa, mismo request
+    ↓
+Evalúa reglas del tipo de vehículo
+    ↓
+Persiste alertas generadas
+    ↓
+EventPublisherPort.publish(AlertGeneratedEvent)   ← fire-and-forget
+```
+
+#### Reglas de este flujo
+
+* `GenerateAlertUseCase` es invocado directamente desde `RegisterMileageUseCase`
+* La evaluación de reglas es responsabilidad del dominio
+* El evento `AlertGeneratedEvent` se publica **después** de persistir, no antes
+* Si la publicación del evento falla, **no se revierte** la alerta (sin Outbox en MVP)
 
 ---
 
 ### 6.3 Publicación de Eventos
+
+Los eventos son **salidas del sistema**, no mecanismos de coordinación interna.
 
 Flujo:
 
@@ -241,6 +257,11 @@ Flujo:
 2. El Use Case lo recoge
 3. Invoca `EventPublisherPort`
 4. Infrastructure publica en RabbitMQ
+
+#### Regla crítica
+
+> RabbitMQ en el MVP se usa **solo para publicar eventos de salida**.
+> No se usa para coordinar flujo entre casos de uso dentro del mismo servicio.
 
 ---
 
@@ -281,7 +302,9 @@ Ej: AlertGeneratedEvent
 * No se manejan retries de eventos
 * No hay versionado de eventos
 * No hay seguridad
-* No hay separación de bounded contexts
+* No hay separación en microservicios
+* No hay schedulers ni procesos batch
+* Un único servicio maneja todo el flujo
 
 Estas decisiones son intencionales para priorizar velocidad de entrega.
 
@@ -289,9 +312,10 @@ Estas decisiones son intencionales para priorizar velocidad de entrega.
 
 ## 9. Evolución Futura
 
+* Separación en microservicios (vehicle-service, rules-alerts-service, maintenance-service)
 * Implementación de Outbox Pattern
-* Separación en microservicios
 * Seguridad (JWT / OAuth2)
-* Reintentos de eventos
+* Reintentos de eventos y DLQ
 * Versionado de eventos
 * Observabilidad
+* Coordinación real via eventos entre servicios separados

@@ -188,6 +188,8 @@ Reglas:
 ### Alertas
 
 * Se generan automáticamente al registrar kilometraje
+* La generación ocurre de forma **sincrónica** dentro del mismo servicio, como parte del flujo de registro de kilometraje
+* No dependen de un scheduler ni de un proceso batch externo
 * Dependen de reglas asociadas al tipo del vehículo
 * Representan estado de mantenimiento requerido
 
@@ -225,21 +227,21 @@ Características:
 El flujo central del negocio es:
 
 1. Se registra un vehículo
-2. Se registra kilometraje
-3. Se valida el kilometraje
-4. Se evalúan reglas
-5. Se genera alerta (si aplica)
-6. Se registra mantenimiento
+2. Se registra kilometraje (validación incluida)
+3. Se evalúan reglas del tipo de vehículo — **dentro del mismo flujo**
+4. Se genera alerta si corresponde — **dentro del mismo flujo**
+5. Se publica evento de integración (asíncrono, no bloquea)
+6. Se registra mantenimiento (acción manual posterior)
 
 ---
 
 ## 8. Consistencia
 
-El sistema opera bajo consistencia eventual:
+El sistema opera bajo el siguiente modelo de consistencia:
 
-* El registro de kilometraje es inmediato
-* La generación de alertas puede ser asíncrona
-* Los efectos secundarios no bloquean la operación principal
+* El registro de kilometraje y la generación de alertas son **síncronos** y ocurren en el mismo request
+* La publicación de eventos hacia RabbitMQ es **asíncrona** y no bloquea el flujo principal
+* Si la publicación del evento falla, la operación principal no se revierte (sin Outbox en MVP)
 
 ---
 
@@ -250,4 +252,6 @@ El sistema opera bajo consistencia eventual:
 * Notificaciones externas
 * Reglas híbridas (tiempo + km)
 * Integraciones externas
-
+* Schedulers o procesos batch para generación de alertas
+* Outbox Pattern
+* Reintentos de eventos

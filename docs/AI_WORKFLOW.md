@@ -27,14 +27,14 @@ Los documentos del sistema tienen una relación jerárquica:
 ```
 context.md        → define el QUÉ (negocio)
 architecture.md   → define el CÓMO estructural
-events.md         → define la COMUNICACIÓN
+events.md         → define la COMUNICACIÓN de salida
 implementation.md → define el DETALLE de código
 ```
 
 ### Regla obligatoria
 
 * Ningún archivo contradice a otro
-* Si hay conflicto:
+* Si hay conflicto aparente:
 
   * Gana `context.md` sobre negocio
   * Gana `architecture.md` sobre estructura
@@ -81,15 +81,17 @@ architecture.md
 
 Ejemplos:
 
-* Publicar evento
-* Consumir evento
-* Definir payload
+* Publicar evento de salida
+* Definir payload de evento
+* Entender qué eventos existen
 
 → Consultar:
 
 ```
 events.md
 ```
+
+⚠️ Importante: los eventos NO coordinan flujo interno. Si la duda es sobre cómo se genera una alerta, consultar `architecture.md`, no `events.md`.
 
 ---
 
@@ -117,7 +119,7 @@ Si la tarea no es clara o mezcla múltiples responsabilidades:
 ```
 1. context.md
 2. architecture.md
-3. events.md (si aplica)
+3. events.md (solo si la tarea involucra publicación de eventos)
 4. implementation.md
 ```
 
@@ -154,9 +156,12 @@ Para cada Task, la IA debe:
 
 ### Paso 3 — Verificar eventos (si aplica)
 
-* ¿La acción genera o consume eventos?
+* ¿La acción publica un evento de salida?
+* ¿El evento está definido en `events.md`?
 
 → Consultar `events.md`
+
+⚠️ No asumir que un evento dispara lógica interna. En el MVP, toda la lógica es sincrónica.
 
 ---
 
@@ -187,6 +192,7 @@ Para cada Task, la IA debe:
 * Orquesta casos de uso
 * No contiene lógica compleja
 * Usa Ports
+* `GenerateAlertUseCase` es invocado **directamente** desde `RegisterMileageUseCase`, no via evento
 
 ---
 
@@ -200,12 +206,25 @@ Para cada Task, la IA debe:
 
 ## 8. Uso de Eventos
 
-* Los eventos:
+### Reglas estrictas del MVP
 
-  * Representan hechos
-  * No son comandos
-* Se publican desde Application
-* Se implementan en Infrastructure
+* Los eventos se publican **después** de persistir
+* Son **fire-and-forget**: si fallan, no revierten la operación
+* **No disparan lógica interna**
+* No hay consumidores de eventos dentro del mismo servicio
+* No hay schedulers ni listeners internos para generar alertas
+
+### Flujo correcto
+
+```
+UseCase → persiste → EventPublisherPort → RabbitMQ
+```
+
+### Anti-patrón prohibido en MVP
+
+```
+❌ UseCase → publica evento → listener interno → genera alerta
+```
 
 ---
 
@@ -217,9 +236,11 @@ La IA debe respetar:
 * Sin outbox
 * Sin retries
 * Sin versionado de eventos
-* Microservicios simples
+* Un único servicio Spring Boot
+* Sin microservicios separados
+* Sin schedulers ni procesos batch
 * PostgreSQL como persistencia
-* RabbitMQ como mensajería
+* RabbitMQ solo para eventos de salida
 
 ---
 
@@ -230,6 +251,7 @@ Este workflow debe permitir:
 * Escalar a microservicios completos
 * Introducir seguridad
 * Implementar patrones avanzados (Outbox, DLQ)
+* Convertir el flujo sincrónico en event-driven entre servicios separados
 * Agregar nuevos consumidores de eventos
 
 ---
@@ -242,3 +264,16 @@ Este workflow debe permitir:
 > 2. Respeto por la arquitectura
 > 3. Claridad en la implementación
 > 4. Simplicidad acorde al MVP
+
+---
+
+## 12. Decisión de Diseño Documentada
+
+> **HU-11 — Generación de Alertas**
+>
+> La generación de alertas es **sincrónica** y ocurre dentro del mismo request de registro de kilometraje.
+> `RegisterMileageUseCase` invoca directamente a `GenerateAlertUseCase`.
+> No existe un scheduler, batch ni consumidor de eventos que dispare este proceso.
+>
+> Esta decisión prioriza simplicidad para el MVP.
+> En una evolución futura, se separará en un microservicio que consuma `MileageRegisteredEvent`.
