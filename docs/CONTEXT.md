@@ -12,7 +12,7 @@ Su objetivo es:
 * Generar alertas automáticas
 * Registrar mantenimientos realizados
 
-El sistema implementa un flujo donde los eventos de uso del vehículo desencadenan acciones automáticas dentro del dominio.
+El sistema implementa un flujo donde el registro de kilometraje desencadena la evaluación de reglas de mantenimiento y la generación de alertas de forma automática.
 
 ---
 
@@ -66,7 +66,7 @@ Responsabilidades:
 
 ---
 
-## Regla de separación de responsabilidades
+### Regla de separación de responsabilidades
 
 * El **Administrador de Flota** gestiona la configuración del sistema
 * El **Conductor** genera datos operativos (kilometraje)
@@ -80,17 +80,18 @@ Responsabilidades:
 
 ### Vehicle
 
-Entidad principal del sistema.
+Agregado raíz que representa un vehículo gestionado.
 
 Responsabilidad:
 
-* Representar un vehículo gestionado
+* Representar un vehículo de la flota con su estado y tipo
 
 Reglas:
 
 * Debe tener placa única
 * Debe tener tipo de vehículo
-* Puede registrar historial de kilometraje
+* Mantiene el `current_mileage` como referencia del kilometraje acumulado
+* Al registrar un nuevo kilometraje, el `current_mileage` se actualiza
 
 ---
 
@@ -100,25 +101,30 @@ Entidad que clasifica vehículos.
 
 Responsabilidad:
 
-* Permitir asociar reglas de mantenimiento
+* Permitir asociar reglas de mantenimiento a grupos de vehículos
 
 ---
 
 ### MileageLog
 
-Entidad que representa un registro de kilometraje.
+Agregado raíz que representa un registro individual de kilometraje.
+
+Responsabilidad:
+
+* Registrar el valor de kilometraje reportado por un conductor en un momento específico
 
 Reglas:
 
-* El kilometraje debe ser **siempre creciente**
-* No se permiten valores negativos
-* Se registra asociado a un vehículo
+* El kilometraje debe ser **siempre creciente** respecto al `current_mileage` del vehículo
+* No se permiten valores negativos ni cero
+* Se registra asociado a un vehículo y a un conductor
+* Es un registro inmutable una vez persistido
 
 ---
 
 ### MaintenanceRule
 
-Agregado que define condiciones de mantenimiento.
+Agregado raíz que define condiciones de mantenimiento.
 
 Responsabilidad:
 
@@ -129,12 +135,13 @@ Reglas:
 * Se basa únicamente en kilometraje
 * Debe tener un intervalo válido (> 0)
 * Puede asociarse a uno o más tipos de vehículo
+* Tiene un umbral de advertencia (`warning_threshold_km`) configurable
 
 ---
 
 ### MaintenanceAlert
 
-Agregado que representa una alerta generada.
+Agregado raíz que representa una alerta generada.
 
 Estados posibles:
 
@@ -147,11 +154,18 @@ Responsabilidad:
 
 * Indicar que un vehículo requiere mantenimiento
 
+Reglas:
+
+* Se genera cuando el `current_mileage` del vehículo alcanza el umbral definido por la regla
+* No se duplican alertas: no puede existir más de una alerta PENDING para el mismo vehículo y la misma regla
+* Puede escalar de WARNING a OVERDUE si el vehículo supera el límite
+* Se resuelve (RESOLVED) al registrar un mantenimiento
+
 ---
 
 ### MaintenanceRecord
 
-Agregado que representa un mantenimiento realizado.
+Agregado raíz que representa un mantenimiento realizado.
 
 Responsabilidad:
 
@@ -162,6 +176,7 @@ Reglas:
 * Debe tener tipo de servicio
 * Debe tener kilometraje válido
 * No puede tener fecha futura
+* Al registrarse, resuelve alertas activas asociadas al vehículo y tipo de servicio
 
 ---
 
@@ -171,9 +186,10 @@ Reglas:
 
 ### Kilometraje
 
-* Siempre debe ser creciente
-* No puede ser negativo
+* Siempre debe ser creciente respecto al `current_mileage` del vehículo
+* No puede ser negativo ni cero
 * Es la base para generación de alertas
+* Un incremento excesivo (> 2000 km) genera una advertencia pero no bloquea el registro
 
 ---
 
@@ -182,6 +198,7 @@ Reglas:
 * Se definen por kilometraje
 * Se aplican por tipo de vehículo
 * No aplican directamente a vehículos individuales
+* Tienen un umbral de advertencia configurable
 
 ---
 
@@ -192,22 +209,28 @@ Reglas:
 * No dependen de un scheduler ni de un proceso batch externo
 * Dependen de reglas asociadas al tipo del vehículo
 * Representan estado de mantenimiento requerido
+* Son idempotentes: no se crean duplicados para el mismo vehículo y regla
+* No se evalúan para vehículos inactivos
 
 ---
 
 ### Mantenimiento
 
 * Representa la acción que resuelve una necesidad
-* Se registra manualmente
-* Cierra el ciclo del sistema
+* Se registra manualmente por el Administrador
+* Cierra el ciclo del sistema resolviendo alertas activas
 
 ---
 
-## 6. Eventos de Dominio (Conceptual)
+## 6. Eventos (Conceptual)
 
-El sistema opera basado en eventos de negocio.
+El sistema maneja eventos en dos niveles:
 
-### Eventos definidos en el MVP
+### Domain Events (internos)
+
+Eventos generados dentro del dominio para representar cambios de estado relevantes.
+
+Ejemplos:
 
 * `MileageRegistered`
 * `AlertGenerated`
@@ -215,43 +238,72 @@ El sistema opera basado en eventos de negocio.
 
 Características:
 
-* Representan hechos que ya ocurrieron
-* No son comandos
-* No tienen conocimiento de consumidores
-* Pueden ser procesados más de una vez
+* Son internos al dominio
+* No dependen de infraestructura
+* No representan contratos de integración
 
 ---
 
-## 7. Flujo Principal del Sistema
+### Integration Events (externos)
+
+Eventos publicados hacia el exterior del sistema, definidos en `events.md`.
+
+Características:
+
+* Son derivados de Domain Events
+* Se publican mediante RabbitMQ
+* Permiten la comunicación entre servicios
+* No afectan el flujo principal del negocio si fallan (best-effort en el MVP)
+
+---
+
+## 7. Comunicación entre Servicios
+
+En el MVP, el sistema se compone de microservicios ligeros:
+
+* `fleet-service`: gestiona vehículos y kilometraje (HU-01, HU-04, HU-05)
+* `rules-alerts-service`: gestiona reglas, alertas y mantenimientos (HU-07, HU-09, HU-11, HU-13)
+
+### Flujo de comunicación
+
+* `fleet-service` publica `MileageRegisteredEvent` al registrar kilometraje
+* `rules-alerts-service` consume el evento para evaluar reglas y generar alertas
+* La generación de alertas dentro de `rules-alerts-service` es sincrónica
+* Los eventos de integración entre servicios se transmiten mediante RabbitMQ
+
+---
+
+## 8. Flujo Principal del Sistema
 
 El flujo central del negocio es:
 
-1. Se registra un vehículo
-2. Se registra kilometraje (validación incluida)
-3. Se evalúan reglas del tipo de vehículo — **dentro del mismo flujo**
-4. Se genera alerta si corresponde — **dentro del mismo flujo**
-5. Se publica evento de integración (asíncrono, no bloquea)
-6. Se registra mantenimiento (acción manual posterior)
+1. Se registra un vehículo (fleet-service)
+2. Se registra kilometraje (fleet-service)
+3. Se valida el kilometraje (fleet-service)
+4. Se publica `MileageRegisteredEvent` (fleet-service → RabbitMQ)
+5. Se evalúan reglas (rules-alerts-service)
+6. Se genera alerta si aplica (rules-alerts-service)
+7. Se registra mantenimiento (rules-alerts-service)
 
 ---
 
-## 8. Consistencia
+## 9. Consistencia
 
-El sistema opera bajo el siguiente modelo de consistencia:
+El sistema opera bajo **consistencia fuerte dentro de cada servicio** y **consistencia eventual entre servicios**:
 
-* El registro de kilometraje y la generación de alertas son **síncronos** y ocurren en el mismo request
-* La publicación de eventos hacia RabbitMQ es **asíncrona** y no bloquea el flujo principal
-* Si la publicación del evento falla, la operación principal no se revierte (sin Outbox en MVP)
+* El registro de kilometraje y la actualización de `current_mileage` son inmediatos dentro de `fleet-service`
+* La generación de alertas es sincrónica dentro de `rules-alerts-service`
+* La comunicación entre servicios es asíncrona vía RabbitMQ
+* La publicación de eventos es best-effort en el MVP (sin outbox, sin retries avanzados)
 
 ---
 
-## 9. Fuera de Alcance
+## 10. Fuera de Alcance
 
 * Seguridad
 * Auditoría avanzada
 * Notificaciones externas
 * Reglas híbridas (tiempo + km)
 * Integraciones externas
-* Schedulers o procesos batch para generación de alertas
 * Outbox Pattern
-* Reintentos de eventos
+* Reintentos avanzados de eventos

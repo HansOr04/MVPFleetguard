@@ -34,8 +34,7 @@ implementation.md → define el DETALLE de código
 ### Regla obligatoria
 
 * Ningún archivo contradice a otro
-* Si hay conflicto aparente:
-
+* Si hay conflicto:
   * Gana `context.md` sobre negocio
   * Gana `architecture.md` sobre estructura
 
@@ -45,19 +44,22 @@ implementation.md → define el DETALLE de código
 
 La IA debe decidir qué documento consultar según la intención de la tarea:
 
+### Reglas generales
+
+* Si existe ambigüedad, la IA debe consultar más de un documento antes de inferir comportamiento
+* Nunca asumir reglas de negocio sin validar en `context.md`
+
+---
+
 ### 4.1 Tareas de negocio
 
 Ejemplos:
 
 * Crear entidad
-* Definir reglas
-* Validaciones
+* Definir reglas de validación
+* Entender flujo del dominio
 
-→ Consultar:
-
-```
-context.md
-```
+→ Consultar: `context.md`
 
 ---
 
@@ -67,13 +69,10 @@ Ejemplos:
 
 * Definir capas
 * Crear paquetes
-* Ubicación de clases
+* Ubicar clases en un servicio
+* Determinar a qué microservicio pertenece una HU
 
-→ Consultar:
-
-```
-architecture.md
-```
+→ Consultar: `architecture.md`
 
 ---
 
@@ -81,15 +80,12 @@ architecture.md
 
 Ejemplos:
 
-* Publicar evento de salida
-* Definir payload de evento
-* Entender qué eventos existen
+* Publicar evento
+* Consumir evento
+* Definir payload
+* Transformar Domain Event a Integration Event
 
-→ Consultar:
-
-```
-events.md
-```
+→ Consultar: `events.md`
 
 ⚠️ Importante: los eventos NO coordinan flujo interno. Si la duda es sobre cómo se genera una alerta, consultar `architecture.md`, no `events.md`.
 
@@ -101,14 +97,12 @@ Ejemplos:
 
 * Crear Use Case
 * Crear Controller
-* Implementar Repository
-* Mappers
+* Implementar Repository / Adapter
+* Crear Mappers
+* Definir DTOs
+* Crear tablas SQL
 
-→ Consultar:
-
-```
-implementation.md
-```
+→ Consultar: `implementation.md`
 
 ---
 
@@ -125,17 +119,53 @@ Si la tarea no es clara o mezcla múltiples responsabilidades:
 
 ---
 
-## 6. Flujo de Trabajo Basado en HUs
+## 6. Alcance del MVP Core
+
+El MVP incluye **únicamente 7 HUs** distribuidas en 2 microservicios:
+
+### fleet-service
+
+| HU | Funcionalidad |
+|----|--------------|
+| HU-01 | Registrar vehículo con tipo asociado |
+| HU-04 | Registrar y acumular kilometraje |
+| HU-05 | Validar coherencia del km (dentro de HU-04, sin endpoint propio) |
+
+### rules-alerts-service
+
+| HU | Funcionalidad |
+|----|--------------|
+| HU-07 | Crear regla con tipo de mantenimiento |
+| HU-09 | Asociar regla a tipo de vehículo |
+| HU-11 | Generar alerta automática por km (disparada por evento, sin endpoint REST) |
+| HU-13 | Registrar mantenimiento |
+
+### HUs diferidas (NO implementar)
+
+* HU-06, HU-12, HU-14, HU-16
+
+> Si la IA recibe una tarea relacionada con una HU diferida, debe indicar que está fuera del alcance del MVP.
+
+---
+
+## 7. Flujo de Trabajo Basado en HUs
 
 El desarrollo se realiza **por Historia de Usuario + Tasks**.
 
 Para cada Task, la IA debe:
 
-### Paso 1 — Entender la intención
+### Paso 1 — Identificar el servicio
+
+* ¿La tarea pertenece a `fleet-service` o `rules-alerts-service`?
+
+→ Consultar `architecture.md` §5
+
+---
+
+### Paso 2 — Entender la intención
 
 * Identificar:
-
-  * Entidad
+  * Entidad / Agregado
   * Acción
   * Regla de negocio
 
@@ -143,21 +173,20 @@ Para cada Task, la IA debe:
 
 ---
 
-### Paso 2 — Ubicar en arquitectura
+### Paso 3 — Ubicar en arquitectura
 
 * Determinar:
-
   * Capa (Domain, Application, Infrastructure)
-  * Tipo de componente
+  * Tipo de componente (Agregado, Use Case, Port, Adapter, Controller, etc.)
 
 → Consultar `architecture.md`
 
 ---
 
-### Paso 3 — Verificar eventos (si aplica)
+### Paso 4 — Verificar eventos (si aplica)
 
-* ¿La acción publica un evento de salida?
-* ¿El evento está definido en `events.md`?
+* ¿La acción genera o consume eventos?
+* ¿Se necesita transformar Domain Event → Integration Event?
 
 → Consultar `events.md`
 
@@ -165,115 +194,105 @@ Para cada Task, la IA debe:
 
 ---
 
-### Paso 4 — Implementar
+### Paso 5 — Implementar
 
 * Crear código siguiendo:
-
-  * Nombres
-  * Estructura
-  * Responsabilidades
+  * Nombres y convenciones
+  * Estructura de paquetes del servicio
+  * Ejemplos de referencia
 
 → Consultar `implementation.md`
 
 ---
 
-## 7. Reglas Obligatorias de Generación
+## 8. Reglas Obligatorias de Generación
 
-### 7.1 Dominio
+### 8.1 Dominio
 
-* No usar frameworks
-* No usar anotaciones
-* Contiene reglas de negocio
+* No usar frameworks ni anotaciones
+* Contiene reglas de negocio y validaciones
+* Agregados extienden `AggregateRoot`
+* Domain Events se registran con `addDomainEvent()`
 
 ---
 
-### 7.2 Application
+### 8.2 Application
 
 * Orquesta casos de uso
 * No contiene lógica compleja
-* Usa Ports
-* `GenerateAlertUseCase` es invocado **directamente** desde `RegisterMileageUseCase`, no via evento
+* Usa Ports In y Ports Out
+* Un Use Case debe modificar un único agregado raíz por transacción lógica (cuando sea posible)
+* Los eventos se publican **después del `save`**, nunca antes
 
 ---
 
-### 7.3 Infrastructure
+### 8.3 Infrastructure
 
 * Implementa detalles técnicos
 * No contiene reglas de negocio
-* Traduce entre capas
+* Traduce entre capas (Mappers)
+* Controllers solo: reciben → transforman → invocan → responden
 
 ---
 
-## 8. Uso de Eventos
+## 9. Uso de Eventos
 
-### Reglas estrictas del MVP
-
-* Los eventos se publican **después** de persistir
-* Son **fire-and-forget**: si fallan, no revierten la operación
-* **No disparan lógica interna**
-* No hay consumidores de eventos dentro del mismo servicio
-* No hay schedulers ni listeners internos para generar alertas
-
-### Flujo correcto
-
-```
-UseCase → persiste → EventPublisherPort → RabbitMQ
-```
-
-### Anti-patrón prohibido en MVP
-
-```
-❌ UseCase → publica evento → listener interno → genera alerta
-```
+* Los eventos representan hechos que ya ocurrieron, no son comandos
+* Se publican desde Application (Use Case), nunca desde Controller ni Repository
+* Se implementan en Infrastructure (RabbitMQ)
+* La publicación de eventos es un efecto secundario **best-effort**
+* No debe afectar el flujo principal del caso de uso
+* La lógica de negocio nunca depende de la publicación de eventos
+* Domain Events se transforman a Integration Events mediante `EventMapper` antes de publicar
 
 ---
 
-## 9. Restricciones del MVP
+## 10. Restricciones del MVP
 
 La IA debe respetar:
 
+* 2 microservicios: `fleet-service` y `rules-alerts-service`
+* Comunicación entre servicios: asíncrona vía RabbitMQ
+* Comunicación interna de cada servicio: sincrónica
+* PostgreSQL como persistencia (una BD por servicio)
+* Sin FK cross-database entre servicios
 * Sin seguridad
-* Sin outbox
-* Sin retries
+* Sin outbox pattern
+* Sin retries avanzados de eventos
 * Sin versionado de eventos
-* Un único servicio Spring Boot
-* Sin microservicios separados
-* Sin schedulers ni procesos batch
-* PostgreSQL como persistencia
-* RabbitMQ solo para eventos de salida
+* Best-effort en publicación de eventos
 
 ---
 
-## 10. Evolución del Sistema
+## 11. Reglas de Datos Compartidos entre Servicios
+
+* `rules-alerts-service` recibe datos de `fleet-service` **únicamente** a través de `MileageRegisteredEvent`
+* El evento incluye: `vehicleId`, `vehicleTypeId`, `vehicleStatus`, `mileage`
+* No hay comunicación HTTP síncrona entre servicios
+* Los campos `vehicle_id` y `vehicle_type_id` en tablas de `rules-alerts-service` son UUIDs simples, **sin FK cross-database**
+* La integridad referencial entre servicios se mantiene a nivel de aplicación
+
+---
+
+## 12. Evolución del Sistema
 
 Este workflow debe permitir:
 
-* Escalar a microservicios completos
-* Introducir seguridad
+* Escalar a más microservicios
+* Introducir seguridad (JWT / OAuth2)
 * Implementar patrones avanzados (Outbox, DLQ)
 * Convertir el flujo sincrónico en event-driven entre servicios separados
 * Agregar nuevos consumidores de eventos
+* Observabilidad
 
 ---
 
-## 11. Regla Final
+## 13. Regla Final
 
 > La IA debe priorizar:
 >
 > 1. Correctitud del dominio
-> 2. Respeto por la arquitectura
+> 2. Respeto por la arquitectura (2 servicios, hexagonal)
 > 3. Claridad en la implementación
 > 4. Simplicidad acorde al MVP
-
----
-
-## 12. Decisión de Diseño Documentada
-
-> **HU-11 — Generación de Alertas**
->
-> La generación de alertas es **sincrónica** y ocurre dentro del mismo request de registro de kilometraje.
-> `RegisterMileageUseCase` invoca directamente a `GenerateAlertUseCase`.
-> No existe un scheduler, batch ni consumidor de eventos que dispare este proceso.
->
-> Esta decisión prioriza simplicidad para el MVP.
-> En una evolución futura, se separará en un microservicio que consuma `MileageRegisteredEvent`.
+> 5. Trazabilidad con HUs y subtasks
