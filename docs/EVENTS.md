@@ -54,6 +54,12 @@ Los Integration Events del sistema cumplen las siguientes reglas:
 * El orden de procesamiento no está garantizado
 * Su fallo de publicación no debe afectar la operación principal del servicio productor
 
+### Regla crítica del MVP
+
+> En el MVP, los eventos son **únicamente de salida**.
+> No se usan para coordinar flujo interno entre casos de uso.
+> El flujo interno es completamente sincrónico.
+
 ---
 
 ## 4. Integration Events del Sistema
@@ -111,7 +117,7 @@ Se emite cuando se genera una alerta de mantenimiento y se persiste exitosamente
 
 #### Consumidores
 
-* (Ninguno en el MVP)
+* Ninguno en el MVP
 
 #### Domain Event origen
 
@@ -148,7 +154,7 @@ Se emite cuando se registra un mantenimiento y se persiste exitosamente.
 
 #### Consumidores
 
-* (Ninguno en el MVP)
+* Ninguno en el MVP
 
 #### Domain Event origen
 

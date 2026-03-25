@@ -205,6 +205,8 @@ Reglas:
 ### Alertas
 
 * Se generan automáticamente al registrar kilometraje
+* La generación ocurre de forma **sincrónica** dentro del mismo servicio, como parte del flujo de registro de kilometraje
+* No dependen de un scheduler ni de un proceso batch externo
 * Dependen de reglas asociadas al tipo del vehículo
 * Representan estado de mantenimiento requerido
 * Son idempotentes: no se crean duplicados para el mismo vehículo y regla

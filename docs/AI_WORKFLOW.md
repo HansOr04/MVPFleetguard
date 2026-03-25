@@ -27,7 +27,7 @@ Los documentos del sistema tienen una relación jerárquica:
 ```
 context.md        → define el QUÉ (negocio)
 architecture.md   → define el CÓMO estructural
-events.md         → define la COMUNICACIÓN
+events.md         → define la COMUNICACIÓN de salida
 implementation.md → define el DETALLE de código
 ```
 
@@ -87,6 +87,8 @@ Ejemplos:
 
 → Consultar: `events.md`
 
+⚠️ Importante: los eventos NO coordinan flujo interno. Si la duda es sobre cómo se genera una alerta, consultar `architecture.md`, no `events.md`.
+
 ---
 
 ### 4.4 Tareas de implementación
@@ -111,7 +113,7 @@ Si la tarea no es clara o mezcla múltiples responsabilidades:
 ```
 1. context.md
 2. architecture.md
-3. events.md (si aplica)
+3. events.md (solo si la tarea involucra publicación de eventos)
 4. implementation.md
 ```
 
@@ -187,6 +189,8 @@ Para cada Task, la IA debe:
 * ¿Se necesita transformar Domain Event → Integration Event?
 
 → Consultar `events.md`
+
+⚠️ No asumir que un evento dispara lógica interna. En el MVP, toda la lógica es sincrónica.
 
 ---
 
@@ -277,6 +281,7 @@ Este workflow debe permitir:
 * Escalar a más microservicios
 * Introducir seguridad (JWT / OAuth2)
 * Implementar patrones avanzados (Outbox, DLQ)
+* Convertir el flujo sincrónico en event-driven entre servicios separados
 * Agregar nuevos consumidores de eventos
 * Observabilidad
 

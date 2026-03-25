@@ -356,6 +356,8 @@ Implementar detalles técnicos.
 
 ### 8.5 Publicación de Eventos
 
+Los eventos son **salidas del sistema**, no mecanismos de coordinación interna.
+
 Flujo:
 
 1. El dominio genera un Domain Event
@@ -364,6 +366,11 @@ Flujo:
 4. Invoca `EventPublisherPort`
 5. Infrastructure publica en RabbitMQ
 6. Los eventos publicados corresponden a Integration Events definidos en `events.md`, no a Domain Events internos
+
+#### Regla crítica
+
+> RabbitMQ en el MVP se usa **solo para publicar eventos de salida**.
+> No se usa para coordinar flujo entre casos de uso dentro del mismo servicio.
 
 ---
 
@@ -414,6 +421,7 @@ Estas decisiones son intencionales para priorizar velocidad de entrega.
 
 ## 11. Evolución Futura
 
+* Separación en microservicios (vehicle-service, rules-alerts-service, maintenance-service)
 * Implementación de Outbox Pattern
 * Separación en más microservicios si el dominio crece
 * Seguridad (JWT / OAuth2)
