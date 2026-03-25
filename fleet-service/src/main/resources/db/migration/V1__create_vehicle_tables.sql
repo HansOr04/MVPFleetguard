@@ -1,5 +1,9 @@
+CREATE TABLE vehicle_type (
+    id              UUID PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL,
+    description     VARCHAR(255)
+);
 
--- Tabla: vehicle (HU-01 subtask DEV#1)
 CREATE TABLE vehicle (
     id              UUID PRIMARY KEY,
     plate           VARCHAR(20)  NOT NULL UNIQUE,
