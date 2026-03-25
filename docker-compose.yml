@@ -1,10 +1,5 @@
-version: '3.8'
 
 services:
-
-  # ─────────────────────────────────
-  #  BASES DE DATOS
-  # ─────────────────────────────────
 
   fleet-db:
     image: postgres:15-alpine
@@ -34,27 +29,9 @@ services:
     networks:
       - fleetguard-net
 
-  maintenance-db:
-    image: postgres:15-alpine
-    container_name: maintenance-db
-    environment:
-      POSTGRES_DB: maintenance_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5435:5432"
-    volumes:
-      - maintenance-data:/var/lib/postgresql/data
-    networks:
-      - fleetguard-net
-
-  # ─────────────────────────────────
-  #  MENSAJERÍA
-  # ─────────────────────────────────
-
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: rabbitmq
+    container_name: rabbitmqfleet
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -70,10 +47,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # ─────────────────────────────────
-  #  MICROSERVICIOS
-  # ─────────────────────────────────
 
   fleet-service:
     build:
@@ -123,44 +96,9 @@ services:
     networks:
       - fleetguard-net
 
-  maintenance-service:
-    build:
-      context: .
-      dockerfile: maintenance-service/Dockerfile
-    container_name: maintenance-service
-    depends_on:
-      maintenance-db:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
-      fleet-service:
-        condition: service_started
-      rules-alerts-service:
-        condition: service_started
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://maintenance-db:5432/maintenance_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
-      FLEET_SERVICE_URL: http://fleet-service:8080
-      RULES_ALERTS_SERVICE_URL: http://rules-alerts-service:8080
-    ports:
-      - "8083:8080"
-    networks:
-      - fleetguard-net
-
-# ─────────────────────────────────
-#  VOLÚMENES Y RED
-# ─────────────────────────────────
-
 volumes:
   fleet-data:
   rules-data:
-  maintenance-data:
   rabbitmq-data:
 
 networks:

@@ -21,7 +21,6 @@
     <modules>
         <module>fleet-service</module>
         <module>rules-alerts-service</module>
-        <module>maintenance-service</module>
     </modules>
 
     <properties>
