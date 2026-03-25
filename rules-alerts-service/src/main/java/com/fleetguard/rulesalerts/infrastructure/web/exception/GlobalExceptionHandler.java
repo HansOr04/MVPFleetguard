@@ -1,7 +1,6 @@
 package com.fleetguard.rulesalerts.infrastructure.web.exception;
 
-import jakarta.persistence.EntityNotFoundException;
-
+import com.fleetguard.rulesalerts.domain.exception.MaintenanceRuleNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,22 +14,34 @@ import java.util.Map;
 /**
  * Manejador global de excepciones para rules-alerts-service.
  * Centraliza las respuestas de error en formato JSON uniforme.
+ *
+ * Formatos de respuesta:
+ *  400 → { "status": 400, "error": "Validation failed", "errors": [...] }
+ *  404 → { "status": 404, "error": "Not found",         "message": "..." }
+ *  409 → { "status": 409, "error": "Conflict",          "message": "..." }
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final String KEY_STATUS  = "status";
+    private static final String KEY_ERROR   = "error";
+    private static final String KEY_ERRORS  = "errors";
+    private static final String KEY_MESSAGE = "message";
+
     // -----------------------------------------------------------------------
-    // 400 – Validación de campos
+    // 400 – Validación de campos (@Valid / @Validated)
     // -----------------------------------------------------------------------
 
     /**
-     * Captura errores de validación de Bean Validation (@Valid / @Validated).
-     * Devuelve la lista de mensajes de todos los campos inválidos.
+     * Captura errores de Bean Validation y devuelve la lista de mensajes de
+     * todos los campos inválidos.
      *
-     * Respuesta:
+     * Ejemplo de respuesta:
      * {
      *   "status": 400,
-     *   "errors": ["El nombre de la regla es obligatorio y no puede estar vacío.", ...]
+     *   "error": "Validation failed",
+     *   "errors": ["El nombre de la regla es obligatorio y no puede estar vacío.",
+     *              "El intervalo en kilómetros debe ser mayor a 0."]
      * }
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -43,30 +54,35 @@ public class GlobalExceptionHandler {
                 .toList();
 
         return Map.of(
-                "status", HttpStatus.BAD_REQUEST.value(),
-                "errors", errors
+                KEY_STATUS, HttpStatus.BAD_REQUEST.value(),
+                KEY_ERROR,  "Validation failed",
+                KEY_ERRORS, errors
         );
     }
 
     // -----------------------------------------------------------------------
-    // 404 – Recurso no encontrado
+    // 404 – Recurso de dominio no encontrado
     // -----------------------------------------------------------------------
 
     /**
-     * Captura EntityNotFoundException lanzada desde la capa de dominio/aplicación.
+     * Captura la excepción de dominio {@link MaintenanceRuleNotFoundException}.
      *
-     * Respuesta:
+     * Ejemplo de respuesta:
      * {
      *   "status": 404,
-     *   "errors": ["Regla de mantenimiento no encontrada con id: 42"]
+     *   "error": "Not found",
+     *   "message": "Regla de mantenimiento no encontrada"
      * }
      */
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(EntityNotFoundException.class)
-    public Map<String, Object> handleEntityNotFound(EntityNotFoundException ex) {
+    @ExceptionHandler(MaintenanceRuleNotFoundException.class)
+    public Map<String, Object> handleMaintenanceRuleNotFound(
+            MaintenanceRuleNotFoundException ex) {
+
         return Map.of(
-                "status", HttpStatus.NOT_FOUND.value(),
-                "errors", List.of(ex.getMessage())
+                KEY_STATUS,  HttpStatus.NOT_FOUND.value(),
+                KEY_ERROR,   "Not found",
+                KEY_MESSAGE, ex.getMessage()
         );
     }
 
@@ -75,24 +91,26 @@ public class GlobalExceptionHandler {
     // -----------------------------------------------------------------------
 
     /**
-     * Captura DataIntegrityViolationException de Spring Data / JPA.
-     * Generalmente ocurre cuando se intenta insertar un registro duplicado
-     * o se viola una restricción de clave foránea.
+     * Captura {@link org.springframework.dao.DataIntegrityViolationException}
+     * de Spring Data / JPA cuando se viola una restricción única o de FK.
      *
-     * Respuesta:
+     * Ejemplo de respuesta:
      * {
      *   "status": 409,
-     *   "errors": ["Ya existe un registro con los datos proporcionados. Verifique los campos únicos."]
+     *   "error": "Conflict",
+     *   "message": "Ya existe un recurso con esos datos"
      * }
      */
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public Map<String, Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+    public Map<String, Object> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex) {
+
         return Map.of(
-                "status", HttpStatus.CONFLICT.value(),
-                "errors", List.of(
-                        "Ya existe un registro con los datos proporcionados. Verifique los campos únicos."
-                )
+                KEY_STATUS,  HttpStatus.CONFLICT.value(),
+                KEY_ERROR,   "Conflict",
+                KEY_MESSAGE, "Ya existe un recurso con esos datos"
         );
     }
 }
+
