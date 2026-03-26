@@ -5,7 +5,7 @@ import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase.Register
 import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase.RegisterVehicleResponse;
 import com.fleetguard.fleet.infrastructure.web.dto.request.RegisterVehicleRequest;
 import com.fleetguard.fleet.infrastructure.web.dto.response.VehicleResponse;
-import com.fleetguard.fleet.infrastructure.web.mapper.WebMapper;
+import com.fleetguard.fleet.infrastructure.web.mapper.VehicleWebMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -24,7 +24,7 @@ class VehicleControllerTest {
     private RegisterVehicleUseCase registerVehicleUseCase;
 
     @Mock
-    private WebMapper mapper;
+    private VehicleWebMapper mapper;
 
     @InjectMocks
     private VehicleController vehicleController;
