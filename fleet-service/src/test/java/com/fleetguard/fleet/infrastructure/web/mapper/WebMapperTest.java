@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class WebMapperTest {
+class VehicleWebMapperTest {
 
     @Test
     void shouldMapToCommand() {
@@ -19,7 +19,7 @@ class WebMapperTest {
                 "Gasoline", "1HGCM82633A123456", UUID.randomUUID()
         );
 
-        WebMapper mapper = new WebMapper();
+        VehicleWebMapper mapper = new VehicleWebMapper();
         RegisterVehicleCommand command = mapper.toCommand(request);
 
         assertEquals(request.getPlate(), command.plate());
@@ -38,7 +38,7 @@ class WebMapperTest {
                 "Gasoline", "1HGCM82633A123456", "ACTIVE", 0, "Sedan"
         );
 
-        WebMapper mapper = new WebMapper();
+        VehicleWebMapper mapper = new VehicleWebMapper();
         VehicleResponse vehicleResponse = mapper.toResponse(response);
 
         assertEquals(response.id(), vehicleResponse.getId());
