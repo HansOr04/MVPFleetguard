@@ -7,7 +7,7 @@ import com.fleetguard.fleet.infrastructure.web.dto.response.VehicleResponse;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WebMapper {
+public class VehicleWebMapper {
 
     public RegisterVehicleCommand toCommand(RegisterVehicleRequest request) {
         return new RegisterVehicleCommand(
