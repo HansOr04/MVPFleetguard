@@ -1,6 +1,5 @@
 package com.fleetguard.fleet.domain.model.vehicle;
 
-import com.fleetguard.fleet.domain.exception.InactiveVehicleException;
 import com.fleetguard.fleet.domain.valueobject.Mileage;
 import com.fleetguard.fleet.domain.valueobject.Plate;
 import com.fleetguard.fleet.domain.valueobject.Vin;

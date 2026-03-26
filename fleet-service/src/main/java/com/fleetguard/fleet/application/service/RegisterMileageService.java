@@ -5,6 +5,7 @@ import com.fleetguard.fleet.application.ports.out.EventPublisherPort;
 import com.fleetguard.fleet.application.ports.out.MileageLogRepositoryPort;
 import com.fleetguard.fleet.application.ports.out.VehicleRepositoryPort;
 import com.fleetguard.fleet.domain.event.DomainEvent;
+import com.fleetguard.fleet.domain.exception.InvalidMileageException;
 import com.fleetguard.fleet.domain.exception.VehicleNotFoundException;
 import com.fleetguard.fleet.domain.model.mileage.MileageLog;
 import com.fleetguard.fleet.domain.model.vehicle.Vehicle;
@@ -30,6 +31,10 @@ public class RegisterMileageService implements RegisterMileageUseCase {
 
         Vehicle vehicle = vehicleRepository.findByPlate(command.plate())
                 .orElseThrow(() -> new VehicleNotFoundException(command.plate()));
+
+        if (command.mileageValue() <= 0) {
+            throw new InvalidMileageException("Mileage value must be greater than zero");
+        }
 
         Mileage newMileage = new Mileage(command.mileageValue());
 
