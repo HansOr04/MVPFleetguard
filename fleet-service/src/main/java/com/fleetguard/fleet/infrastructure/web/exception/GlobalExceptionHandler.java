@@ -4,6 +4,8 @@ import com.fleetguard.fleet.domain.exception.DuplicatePlateException;
 import com.fleetguard.fleet.domain.exception.InactiveVehicleException;
 import com.fleetguard.fleet.domain.exception.InvalidMileageException;
 import com.fleetguard.fleet.domain.exception.InvalidVinException;
+import com.fleetguard.fleet.domain.exception.MissingRecordedByException;
+import com.fleetguard.fleet.domain.exception.VehicleNotFoundException;
 import com.fleetguard.fleet.domain.exception.VehicleTypeNotFoundException;
 import com.fleetguard.fleet.infrastructure.web.dto.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -22,7 +24,8 @@ public class GlobalExceptionHandler {
             DuplicatePlateException.class,
             InvalidVinException.class,
             InvalidMileageException.class,
-            InactiveVehicleException.class
+            InactiveVehicleException.class,
+            MissingRecordedByException.class
     })
     public ResponseEntity<ErrorResponse> handleDomainException(RuntimeException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -35,6 +38,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(VehicleTypeNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(VehicleTypeNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage(),
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(VehicleNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleVehicleNotFoundException(VehicleNotFoundException ex) {
         ErrorResponse error = new ErrorResponse(
                 ex.getMessage(),
                 LocalDateTime.now(),
