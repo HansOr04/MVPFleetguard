@@ -1,16 +1,14 @@
 package com.fleetguard.fleet.infrastructure.web.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class VehicleResponse {
-
     private UUID id;
     private String plate;
     private String brand;

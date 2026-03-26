@@ -19,7 +19,15 @@ public interface RegisterVehicleUseCase {
 
     record RegisterVehicleResponse(
             UUID id,
-            String status
+            String plate,
+            String brand,
+            String model,
+            int year,
+            String fuelType,
+            String vin,
+            String status,
+            long currentMileage,
+            String vehicleTypeName
     ) {
     }
 }

@@ -1,4 +1,4 @@
-package com.fleetguard.fleet.application.usecase;
+package com.fleetguard.fleet.application.service;
 
 import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase;
 import com.fleetguard.fleet.application.ports.out.VehicleRepositoryPort;
@@ -8,14 +8,14 @@ import com.fleetguard.fleet.domain.model.vehicle.Vehicle;
 import com.fleetguard.fleet.domain.model.vehicle.VehicleType;
 import com.fleetguard.fleet.domain.valueobject.Plate;
 import com.fleetguard.fleet.domain.valueobject.Vin;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-public class RegisterVehicleUseCaseImpl implements RegisterVehicleUseCase {
+@Service
+@RequiredArgsConstructor
+public class RegisterVehicleService implements RegisterVehicleUseCase {
 
     private final VehicleRepositoryPort vehicleRepository;
-
-    public RegisterVehicleUseCaseImpl(VehicleRepositoryPort vehicleRepository) {
-        this.vehicleRepository = vehicleRepository;
-    }
 
     @Override
     public RegisterVehicleResponse execute(RegisterVehicleCommand command) {
@@ -35,6 +35,17 @@ public class RegisterVehicleUseCaseImpl implements RegisterVehicleUseCase {
 
         Vehicle saved = vehicleRepository.save(vehicle);
 
-        return new RegisterVehicleResponse(saved.getId(), saved.getStatus().name());
+        return new RegisterVehicleResponse(
+                saved.getId(),
+                saved.getPlate().getValue(),
+                saved.getBrand(),
+                saved.getModel(),
+                saved.getYear(),
+                saved.getFuelType(),
+                saved.getVin().getValue(),
+                saved.getStatus().name(),
+                saved.getCurrentMileage().getValue(),
+                saved.getVehicleType().getName()
+        );
     }
 }

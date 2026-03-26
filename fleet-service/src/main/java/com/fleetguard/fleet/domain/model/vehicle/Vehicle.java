@@ -5,9 +5,15 @@ import com.fleetguard.fleet.domain.model.AggregateRoot;
 import com.fleetguard.fleet.domain.valueobject.Mileage;
 import com.fleetguard.fleet.domain.valueobject.Plate;
 import com.fleetguard.fleet.domain.valueobject.Vin;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Vehicle extends AggregateRoot {
 
     private UUID id;
@@ -21,11 +27,24 @@ public class Vehicle extends AggregateRoot {
     private Mileage currentMileage;
     private VehicleType vehicleType;
 
-    private Vehicle() {
-    }
-
     public static Vehicle create(Plate plate, String brand, String model,
                                  int year, String fuelType, Vin vin, VehicleType vehicleType) {
+        if (brand == null || brand.isBlank()) {
+            throw new IllegalArgumentException("Brand cannot be null or empty");
+        }
+        if (model == null || model.isBlank()) {
+            throw new IllegalArgumentException("Model cannot be null or empty");
+        }
+        if (fuelType == null || fuelType.isBlank()) {
+            throw new IllegalArgumentException("Fuel type cannot be null or empty");
+        }
+        if (year <= 0) {
+            throw new IllegalArgumentException("Year must be a positive integer");
+        }
+        if (vehicleType == null) {
+            throw new IllegalArgumentException("VehicleType cannot be null");
+        }
+
         Vehicle vehicle = new Vehicle();
         vehicle.id = UUID.randomUUID();
         vehicle.plate = plate;
@@ -47,24 +66,4 @@ public class Vehicle extends AggregateRoot {
         this.currentMileage.validateNotLessThan(newMileage);
         this.currentMileage = newMileage;
     }
-
-    public UUID getId() { return id; }
-
-    public Plate getPlate() { return plate; }
-
-    public String getBrand() { return brand; }
-
-    public String getModel() { return model; }
-
-    public int getYear() { return year; }
-
-    public String getFuelType() { return fuelType; }
-
-    public Vin getVin() { return vin; }
-
-    public VehicleStatus getStatus() { return status; }
-
-    public Mileage getCurrentMileage() { return currentMileage; }
-
-    public VehicleType getVehicleType() { return vehicleType; }
 }

@@ -21,10 +21,18 @@ public class WebMapper {
         );
     }
 
-    public VehicleResponse toResponse(RegisterVehicleResponse result) {
-        VehicleResponse response = new VehicleResponse();
-        response.setId(result.id());
-        response.setStatus(result.status());
-        return response;
+    public VehicleResponse toResponse(RegisterVehicleResponse response) {
+        return new VehicleResponse(
+                response.id(),
+                response.plate(),
+                response.brand(),
+                response.model(),
+                response.year(),
+                response.fuelType(),
+                response.vin(),
+                response.status(),
+                response.currentMileage(),
+                response.vehicleTypeName()
+        );
     }
 }

@@ -4,11 +4,19 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "vehicle_type")
+@NoArgsConstructor
+@AllArgsConstructor
 public class VehicleTypeJpaEntity {
 
     @Id
@@ -20,37 +28,4 @@ public class VehicleTypeJpaEntity {
 
     @Column(name = "description", length = 255)
     private String description;
-
-    protected VehicleTypeJpaEntity() {
-    }
-
-    public VehicleTypeJpaEntity(UUID id, String name, String description) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 }
