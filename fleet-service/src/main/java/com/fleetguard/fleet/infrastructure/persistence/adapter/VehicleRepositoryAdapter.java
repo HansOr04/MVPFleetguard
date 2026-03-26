@@ -41,4 +41,10 @@ public class VehicleRepositoryAdapter implements VehicleRepositoryPort {
         return vehicleTypeRepository.findById(id)
                 .map(VehicleMapper::toDomain);
     }
+
+    @Override
+    public Optional<Vehicle> findById(UUID id) {
+        return vehicleRepository.findById(id)
+                .map(VehicleMapper::toDomain);
+    }
 }

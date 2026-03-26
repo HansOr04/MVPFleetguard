@@ -23,6 +23,15 @@ public class MileageLog extends AggregateRoot {
     private String recordedBy;
     private boolean excessiveIncrement;
 
+    public MileageLog(UUID id, UUID vehicleId, Mileage mileageValue,
+                      LocalDateTime recordedAt, String recordedBy) {
+        this.id = id;
+        this.vehicleId = vehicleId;
+        this.mileageValue = mileageValue;
+        this.recordedAt = recordedAt;
+        this.recordedBy = recordedBy;
+    }
+
     public static MileageLog create(UUID vehicleId, UUID vehicleTypeId, String vehicleStatus,
                                     Mileage mileageValue, LocalDateTime recordedAt,
                                     String recordedBy, boolean excessiveIncrement) {
