@@ -1,0 +1,23 @@
+package com.fleetguard.rulesalerts.infrastructure.persistence.adapter;
+
+import com.fleetguard.rulesalerts.application.ports.out.MaintenanceRuleRepositoryPort;
+import com.fleetguard.rulesalerts.domain.model.rule.MaintenanceRule;
+import com.fleetguard.rulesalerts.infrastructure.persistence.entity.MaintenanceRuleJpaEntity;
+import com.fleetguard.rulesalerts.infrastructure.persistence.mapper.MaintenanceRulePersistenceMapper;
+import com.fleetguard.rulesalerts.infrastructure.persistence.repository.MaintenanceRuleJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class MaintenanceRuleRepositoryAdapter implements MaintenanceRuleRepositoryPort {
+
+    private final MaintenanceRuleJpaRepository maintenanceRuleJpaRepository;
+
+    @Override
+    public MaintenanceRule save(MaintenanceRule rule) {
+        MaintenanceRuleJpaEntity entity = MaintenanceRulePersistenceMapper.toJpaEntity(rule);
+        MaintenanceRuleJpaEntity saved = maintenanceRuleJpaRepository.save(entity);
+        return MaintenanceRulePersistenceMapper.toDomain(saved);
+    }
+}

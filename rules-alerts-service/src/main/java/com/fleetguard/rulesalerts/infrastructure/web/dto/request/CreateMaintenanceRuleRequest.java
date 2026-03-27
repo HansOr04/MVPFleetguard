@@ -9,10 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO de entrada para la creación de una regla de mantenimiento.
- * Incluye anotaciones de validación con mensajes en español.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,10 +25,6 @@ public class CreateMaintenanceRuleRequest {
     @Min(value = 1, message = "El intervalo en kilómetros debe ser mayor a 0.")
     private Integer intervalKm;
 
-    /**
-     * Opcional — puede ser null; en ese caso se aplicará el DEFAULT definido en BD (500 km).
-     * Si se envía, debe ser mayor a 0.
-     */
     @Min(value = 1, message = "El umbral de alerta en kilómetros debe ser mayor a 0.")
     private Integer warningThresholdKm;
 }
