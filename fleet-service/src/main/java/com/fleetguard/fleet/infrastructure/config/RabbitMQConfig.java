@@ -1,9 +1,14 @@
 package com.fleetguard.fleet.infrastructure.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +32,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding mileageRegisteredBinding(Queue mileageRegisteredQueue, TopicExchange fleetguardExchange) {
+    public Binding mileageRegisteredBinding(Queue mileageRegisteredQueue,
+                                            TopicExchange fleetguardExchange) {
         return BindingBuilder.bind(mileageRegisteredQueue)
                 .to(fleetguardExchange)
                 .with(MILEAGE_ROUTING_KEY);
@@ -35,6 +41,17 @@ public class RabbitMQConfig {
 
     @Bean
     public MessageConverter jackson2JsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return new Jackson2JsonMessageConverter(mapper);
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
+                                         MessageConverter jackson2JsonMessageConverter) {
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        template.setMessageConverter(jackson2JsonMessageConverter);
+        return template;
     }
 }

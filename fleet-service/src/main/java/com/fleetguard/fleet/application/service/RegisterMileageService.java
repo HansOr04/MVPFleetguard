@@ -57,9 +57,11 @@ public class RegisterMileageService implements RegisterMileageUseCase {
         MileageLog savedLog = mileageLogRepository.save(mileageLog);
 
         List<DomainEvent> events = mileageLog.pullDomainEvents();
+        log.info("Events to publish: {}", events.size());
         for (DomainEvent event : events) {
             try {
                 eventPublisher.publish(event);
+                log.info("Event published: {}", event.getClass().getSimpleName());
             } catch (Exception e) {
                 log.error("Failed to publish domain event: {}", event.getClass().getSimpleName(), e);
             }
