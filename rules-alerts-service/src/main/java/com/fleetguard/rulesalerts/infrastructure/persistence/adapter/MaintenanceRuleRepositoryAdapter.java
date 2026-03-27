@@ -8,6 +8,8 @@ import com.fleetguard.rulesalerts.infrastructure.persistence.repository.Maintena
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository
 @RequiredArgsConstructor
 public class MaintenanceRuleRepositoryAdapter implements MaintenanceRuleRepositoryPort {
@@ -19,5 +21,10 @@ public class MaintenanceRuleRepositoryAdapter implements MaintenanceRuleReposito
         MaintenanceRuleJpaEntity entity = MaintenanceRulePersistenceMapper.toJpaEntity(rule);
         MaintenanceRuleJpaEntity saved = maintenanceRuleJpaRepository.save(entity);
         return MaintenanceRulePersistenceMapper.toDomain(saved);
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return maintenanceRuleJpaRepository.existsById(id);
     }
 }

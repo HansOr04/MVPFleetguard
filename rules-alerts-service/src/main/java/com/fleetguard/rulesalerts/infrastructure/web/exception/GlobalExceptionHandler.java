@@ -1,5 +1,6 @@
 package com.fleetguard.rulesalerts.infrastructure.web.exception;
 
+import com.fleetguard.rulesalerts.domain.exception.DuplicateAssociationException;
 import com.fleetguard.rulesalerts.domain.exception.MaintenanceRuleNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,16 @@ public class GlobalExceptionHandler {
         return Map.of(
                 KEY_STATUS,  HttpStatus.NOT_FOUND.value(),
                 KEY_ERROR,   "Not found",
+                KEY_MESSAGE, ex.getMessage()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(DuplicateAssociationException.class)
+    public Map<String, Object> handleDuplicateAssociation(DuplicateAssociationException ex) {
+        return Map.of(
+                KEY_STATUS,  HttpStatus.CONFLICT.value(),
+                KEY_ERROR,   "Conflict",
                 KEY_MESSAGE, ex.getMessage()
         );
     }
