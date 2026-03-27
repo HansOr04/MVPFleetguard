@@ -11,4 +11,6 @@ public interface MaintenanceAlertJpaRepository extends JpaRepository<Maintenance
     boolean existsByVehicleIdAndRuleIdAndStatus(UUID vehicleId, UUID ruleId, String status);
 
     List<MaintenanceAlertJpaEntity> findByStatus(String status);
+
+    List<MaintenanceAlertJpaEntity> findByVehicleIdAndStatusIn(UUID vehicleId, List<String> statuses);
 }
