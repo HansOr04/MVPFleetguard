@@ -12,4 +12,6 @@ public interface MaintenanceAlertRepositoryPort {
     boolean existsByVehicleIdAndRuleIdAndStatus(UUID vehicleId, UUID ruleId, String status);
 
     List<MaintenanceAlert> findByStatus(String status);
+
+    List<MaintenanceAlert> findActiveByVehicleId(UUID vehicleId);
 }
