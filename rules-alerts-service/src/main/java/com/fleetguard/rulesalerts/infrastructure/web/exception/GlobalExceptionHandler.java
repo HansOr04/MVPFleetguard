@@ -1,6 +1,7 @@
 package com.fleetguard.rulesalerts.infrastructure.web.exception;
 
 import com.fleetguard.rulesalerts.domain.exception.DuplicateAssociationException;
+import com.fleetguard.rulesalerts.domain.exception.InvalidMaintenanceException;
 import com.fleetguard.rulesalerts.domain.exception.MaintenanceRuleNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -69,5 +70,14 @@ public class GlobalExceptionHandler {
                 KEY_MESSAGE, "Ya existe un recurso con esos datos"
         );
     }
-}
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InvalidMaintenanceException.class)
+    public Map<String, Object> handleInvalidMaintenance(InvalidMaintenanceException ex) {
+        return Map.of(
+                KEY_STATUS,  HttpStatus.BAD_REQUEST.value(),
+                KEY_ERROR,   "Bad request",
+                KEY_MESSAGE, ex.getMessage()
+        );
+    }
+}

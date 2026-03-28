@@ -35,4 +35,13 @@ public class MaintenanceAlertRepositoryAdapter implements MaintenanceAlertReposi
                 .map(MaintenanceAlertPersistenceMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public List<MaintenanceAlert> findActiveByVehicleId(UUID vehicleId) {
+        return maintenanceAlertJpaRepository
+                .findByVehicleIdAndStatusIn(vehicleId, List.of("PENDING", "WARNING"))
+                .stream()
+                .map(MaintenanceAlertPersistenceMapper::toDomain)
+                .toList();
+    }
 }

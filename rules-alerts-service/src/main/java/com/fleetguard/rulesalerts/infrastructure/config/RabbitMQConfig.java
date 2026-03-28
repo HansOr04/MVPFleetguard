@@ -45,8 +45,8 @@ public class RabbitMQConfig {
     @Bean
     public MessageConverter jackson2JsonMessageConverter() {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());                     // ✅ soporte LocalDateTime
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);  // ✅ formato ISO string
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(mapper);
 
