@@ -6,39 +6,75 @@ import { useRules } from '@/hooks/useRules';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useToast } from '@/hooks/useToast';
 import { Toast } from '@/components/ui/Toast';
-import { CreateRuleDto } from '@/types';
+import { mockVehicleTypes } from '@/lib/mocks/mockVehicleTypes';
 import { mockMaintenanceTypes } from '@/lib/mocks/mockMaintenanceTypes';
+import { CreateRuleDto } from '@/types';
+
+interface RuleFormData extends CreateRuleDto {
+  intervalKm: number;
+  warningThresholdKm: number;
+}
 
 export default function RulesPage() {
   const { toast, showToast } = useToast();
   const { rules, loading: loadingRules, refetch } = useRules();
   const { alerts } = useAlerts('PENDING');
 
-  const [formData, setFormData] = useState<CreateRuleDto>({
+  const [formData, setFormData] = useState<RuleFormData>({
     name: '',
     maintenanceType: 'PREVENTIVE',
     intervalKm: 0,
     warningThresholdKm: 0,
   });
+  const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   const activeRulesCount = rules.filter((r) => r.status === 'ACTIVE').length;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: name === 'intervalKm' || name === 'warningThresholdKm' ? Number(value) : value,
-    });
+    }));
+  };
+
+  const handleCheckboxChange = (vehicleTypeId: string) => {
+    setSelectedVehicleTypes((prev) =>
+      prev.includes(vehicleTypeId)
+        ? prev.filter((id) => id !== vehicleTypeId)
+        : [...prev, vehicleTypeId]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || formData.intervalKm <= 0) return;
+
     setSubmitting(true);
     try {
-      await rulesApi.create(formData);
-      showToast('Regla de mantenimiento creada exitosamente', 'success');
+      const createdRule = await rulesApi.create(formData);
+
+      let associationErrors = 0;
+      for (const vehicleTypeId of selectedVehicleTypes) {
+        try {
+          await rulesApi.associateVehicleType(createdRule.id, { vehicleTypeId });
+        } catch {
+          associationErrors++;
+        }
+      }
+
+      if (associationErrors > 0) {
+        showToast(
+          `Regla creada, pero ${associationErrors} asociación(es) fallaron`,
+          'error'
+        );
+      } else {
+        showToast('Regla de mantenimiento creada exitosamente', 'success');
+      }
+
       setFormData({ name: '', maintenanceType: 'PREVENTIVE', intervalKm: 0, warningThresholdKm: 0 });
+      setSelectedVehicleTypes([]);
       refetch();
     } catch (error: unknown) {
       const e = error as { message?: string };
@@ -51,80 +87,70 @@ export default function RulesPage() {
   return (
     <div>
       <h1>Reglas de Mantenimiento</h1>
-      <p>Reglas activas: {activeRulesCount}</p>
-      <p>Alertas pendientes: {alerts.length}</p>
+      <p>Reglas activas: {activeRulesCount} | Próximas alertas: {alerts.length}</p>
 
       <form onSubmit={handleSubmit}>
-        <input
-          required
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Nombre de la regla"
-        />
-        <select
-          required
-          name="maintenanceType"
-          value={formData.maintenanceType}
-          onChange={handleChange}
-        >
-          {mockMaintenanceTypes.map((type) => (
-            <option key={type.id} value={type.id}>
+        <div>
+          <label>Nombre de la regla</label>
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            placeholder="Ej: Cambio de Aceite"
+            type="text"
+          />
+        </div>
+        <div>
+          <label>Tipo de mantenimiento</label>
+          <select name="maintenanceType" value={formData.maintenanceType} onChange={handleChange} required>
+            {mockMaintenanceTypes.map((type) => (
+              <option key={type.id} value={type.id}>{type.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Intervalo (km)</label>
+          <input
+            name="intervalKm"
+            value={formData.intervalKm || ''}
+            onChange={handleChange}
+            required
+            min={1}
+            placeholder="10000"
+            type="number"
+          />
+        </div>
+        <div>
+          <label>Umbral de aviso (km)</label>
+          <input
+            name="warningThresholdKm"
+            value={formData.warningThresholdKm || ''}
+            onChange={handleChange}
+            min={0}
+            placeholder="500"
+            type="number"
+          />
+        </div>
+
+        <fieldset>
+          <legend>Tipos de vehículo a asociar</legend>
+          {mockVehicleTypes.map((type) => (
+            <label key={type.id}>
+              <input
+                type="checkbox"
+                checked={selectedVehicleTypes.includes(type.id)}
+                onChange={() => handleCheckboxChange(type.id)}
+              />
               {type.name}
-            </option>
+            </label>
           ))}
-        </select>
-        <input
-          required
-          name="intervalKm"
-          value={formData.intervalKm === 0 ? '' : formData.intervalKm}
-          onChange={handleChange}
-          type="number"
-          min="1"
-          placeholder="Intervalo (km)"
-        />
-        <input
-          required
-          name="warningThresholdKm"
-          value={formData.warningThresholdKm === 0 ? '' : formData.warningThresholdKm}
-          onChange={handleChange}
-          type="number"
-          min="1"
-          placeholder="Umbral aviso (km)"
-        />
+        </fieldset>
+
         <button type="submit" disabled={submitting}>
-          {submitting ? 'Guardando...' : 'Añadir Regla'}
+          {submitting ? 'Guardando...' : 'Crear Regla'}
         </button>
       </form>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Intervalo</th>
-            <th>Umbral</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loadingRules ? (
-            <tr>
-              <td colSpan={5}>Cargando...</td>
-            </tr>
-          ) : (
-            rules.map((rule) => (
-              <tr key={rule.id}>
-                <td>{rule.name}</td>
-                <td>{rule.maintenanceType}</td>
-                <td>{rule.intervalKm.toLocaleString()} km</td>
-                <td>{rule.warningThresholdKm.toLocaleString()} km</td>
-                <td>{rule.status}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
 
       <Toast message={toast.message} type={toast.type} visible={toast.visible} />
     </div>
