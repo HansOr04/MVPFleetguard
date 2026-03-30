@@ -10,7 +10,7 @@ export interface Vehicle {
   vin: string
   status: string
   currentMileage: number
-  vehicleTypeName: string   
+  vehicleTypeName: string
 }
 
 export interface VehicleType {
@@ -19,8 +19,9 @@ export interface VehicleType {
   description: string
 }
 
+// MileageResponse.java
 export interface MileageLog {
-  id: string              
+  mileageLogId: string   // ← era "id", el backend devuelve "mileageLogId"
   vehicleId: string
   plate: string
   mileageValue: number
@@ -30,6 +31,7 @@ export interface MileageLog {
   excessiveIncrement: boolean
 }
 
+// MaintenanceRuleResponse.java
 export interface MaintenanceRule {
   id: string
   name: string
@@ -41,6 +43,7 @@ export interface MaintenanceRule {
   updatedAt: string
 }
 
+// RuleVehicleTypeAssocResponse.java
 export interface RuleVehicleTypeAssoc {
   id: string
   ruleId: string
@@ -48,6 +51,7 @@ export interface RuleVehicleTypeAssoc {
   createdAt: string
 }
 
+// MaintenanceAlert (generado internamente por rules-alerts-service)
 export interface MaintenanceAlert {
   id: string
   vehicleId: string
@@ -58,6 +62,7 @@ export interface MaintenanceAlert {
   dueAtKm: number
 }
 
+// MaintenanceRecordResponse.java
 export interface MaintenanceRecord {
   id: string
   vehicleId: string
@@ -65,7 +70,7 @@ export interface MaintenanceRecord {
   ruleId: string | null
   serviceType: string
   description: string | null
-  cost: number | null
+  cost: number | null       // backend usa BigDecimal → number en TS
   provider: string | null
   performedAt: string
   mileageAtService: number
@@ -80,7 +85,7 @@ export interface ApiError {
 
 // ─── DTOs (lo que se envía al backend) ──────────────────────────────────────
 
-// fleet-service — RegisterVehicleRequest
+// fleet-service — RegisterVehicleRequest.java
 export interface CreateVehicleDto {
   plate: string
   brand: string
@@ -88,37 +93,37 @@ export interface CreateVehicleDto {
   year: number
   fuelType: string
   vin: string
-  vehicleTypeId: string
+  vehicleTypeId: string   // UUID como string
 }
 
-// fleet-service — RegisterMileageRequest
+// fleet-service — RegisterMileageRequest.java
 export interface UpdateMileageDto {
-  mileageValue: number
+  mileageValue: number    // Long en backend
   recordedBy: string
 }
 
-// rules-alerts-service — CreateMaintenanceRuleRequest
+// rules-alerts-service — CreateMaintenanceRuleRequest.java
 export interface CreateRuleDto {
   name: string
   maintenanceType: string
-  intervalKm: number
+  intervalKm: number      // Integer en backend
   warningThresholdKm: number
 }
 
-// rules-alerts-service — AssociateVehicleTypeRequest
+// rules-alerts-service — AssociateVehicleTypeRequest.java
 export interface AssociateVehicleTypeDto {
-  vehicleTypeId: string
+  vehicleTypeId: string   // UUID como string
 }
 
-// rules-alerts-service — RegisterMaintenanceRequest
+// rules-alerts-service — RegisterMaintenanceRequest.java
 export interface CreateMaintenanceDto {
-  vehicleId: string
+  vehicleId: string       // UUID como string — @NotNull
   alertId: string | null
   ruleId: string | null
-  serviceType: string
+  serviceType: string     // @NotBlank
   description: string | null
-  cost: number | null
+  cost: number | null     // BigDecimal — puede ser null
   provider: string | null
-  performedAt: string | null
-  mileageAtService: number
+  performedAt: string | null  // LocalDateTime como ISO string — puede ser null
+  mileageAtService: number    // Long — @NotNull @Positive
 }

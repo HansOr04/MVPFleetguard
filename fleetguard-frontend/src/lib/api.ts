@@ -13,8 +13,8 @@ import {
 } from '@/types';
 import { mockVehicles, mockRules, mockAlerts, mockRecords } from './mockData';
 
-const FLEET_URL   = process.env.NEXT_PUBLIC_FLEET_SERVICE_URL;
-const RULES_URL   = process.env.NEXT_PUBLIC_RULES_SERVICE_URL;
+const FLEET_URL = process.env.NEXT_PUBLIC_FLEET_SERVICE_URL;
+const RULES_URL = process.env.NEXT_PUBLIC_RULES_SERVICE_URL;
 
 let demoModeActive = false;
 
@@ -35,20 +35,19 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 
     const errorBody = await response.json().catch(() => ({}));
     throw {
-      status:  response.status,
+      status: response.status,
       message: errorBody.message || 'Error en la solicitud',
-      errors:  errorBody.errors,
+      errors: errorBody.errors,
     } as ApiError;
   } catch (error: unknown) {
     const e = error as ApiError;
     if (e.status !== undefined) throw e;
-    // Sin conexión → modo demo
     demoModeActive = true;
     throw { status: 0, message: 'Sin conexión con el servidor' } as ApiError;
   }
 }
 
-// ─── Vehículos (fleet-service) ────────────────────────────────────────────────
+// ─── Vehículos — POST /api/vehicles  |  POST /api/vehicles/{plate}/mileage ───
 
 export const vehicleApi = {
   getAll: async (status?: string): Promise<Vehicle[]> => {
@@ -57,9 +56,7 @@ export const vehicleApi = {
       return await request<Vehicle[]>(`${FLEET_URL}/api/vehicles${query}`);
     } catch (e: unknown) {
       if ((e as ApiError).status === 0)
-        return status
-          ? mockVehicles.filter((v) => v.status === status)
-          : mockVehicles;
+        return status ? mockVehicles.filter((v) => v.status === status) : mockVehicles;
       throw e;
     }
   },
@@ -77,6 +74,7 @@ export const vehicleApi = {
     }
   },
 
+  // POST /api/vehicles  ← RegisterVehicleRequest.java
   register: async (data: CreateVehicleDto): Promise<Vehicle> => {
     try {
       return await request<Vehicle>(`${FLEET_URL}/api/vehicles`, {
@@ -92,7 +90,7 @@ export const vehicleApi = {
           id: crypto.randomUUID(),
           status: 'ACTIVE',
           currentMileage: 0,
-          vehicleTypeName: data.vehicleTypeId, // fallback sin nombre real
+          vehicleTypeName: data.vehicleTypeId,
         };
         mockVehicles.push(newV);
         return newV;
@@ -101,6 +99,7 @@ export const vehicleApi = {
     }
   },
 
+  // POST /api/vehicles/{plate}/mileage  ← RegisterMileageRequest.java
   updateMileage: async (plate: string, data: UpdateMileageDto): Promise<MileageLog> => {
     try {
       return await request<MileageLog>(
@@ -112,7 +111,7 @@ export const vehicleApi = {
         const v = mockVehicles.find((v) => v.plate === plate);
         if (v) v.currentMileage = data.mileageValue;
         return {
-          id: crypto.randomUUID(),
+          mileageLogId: crypto.randomUUID(), 
           vehicleId: v?.id ?? '',
           plate,
           mileageValue: data.mileageValue,
@@ -127,18 +126,21 @@ export const vehicleApi = {
   },
 };
 
-// ─── Reglas de mantenimiento (rules-alerts-service) ───────────────────────────
+// ─── Reglas — POST /api/maintenance-rules  |  POST /{id}/vehicle-types ───────
 
 export const rulesApi = {
-  getAll: async (): Promise<MaintenanceRule[]> => {
-    try {
-      return await request<MaintenanceRule[]>(`${RULES_URL}/api/maintenance-rules`);
-    } catch (e: unknown) {
-      if ((e as ApiError).status === 0) return mockRules;
-      throw e;
-    }
-  },
+  // // NOTA: GET /api/maintenance-rules no tiene controller visible en el backend
+  // // compartido. Se deja el endpoint esperado; ajustar si el backend lo expone.
+  // getAll: async (): Promise<MaintenanceRule[]> => {
+  //   try {
+  //     return await request<MaintenanceRule[]>(`${RULES_URL}/api/maintenance-rules`);
+  //   } catch (e: unknown) {
+  //     if ((e as ApiError).status === 0) return mockRules;
+  //     throw e;
+  //   }
+  // },
 
+  // POST /api/maintenance-rules  ← CreateMaintenanceRuleRequest.java
   create: async (data: CreateRuleDto): Promise<MaintenanceRule> => {
     try {
       return await request<MaintenanceRule>(`${RULES_URL}/api/maintenance-rules`, {
@@ -162,6 +164,7 @@ export const rulesApi = {
     }
   },
 
+  // POST /api/maintenance-rules/{id}/vehicle-types  ← AssociateVehicleTypeRequest.java
   associateVehicleType: async (
     ruleId: string,
     data: AssociateVehicleTypeDto,
@@ -178,24 +181,22 @@ export const rulesApi = {
   },
 };
 
-// ─── Alertas (rules-alerts-service) ───────────────────────────────────────────
+// // ─── Alertas — GET /api/alerts (endpoint pendiente de confirmar en backend) ───
 
-export const alertsApi = {
-  getAll: async (status?: string): Promise<MaintenanceAlert[]> => {
-    try {
-      const query = status ? `?status=${status}` : '';
-      return await request<MaintenanceAlert[]>(`${RULES_URL}/api/alerts${query}`);
-    } catch (e: unknown) {
-      if ((e as ApiError).status === 0)
-        return status
-          ? mockAlerts.filter((a) => a.status === status)
-          : mockAlerts;
-      throw e;
-    }
-  },
-};
+// export const alertsApi = {
+//   getAll: async (status?: string): Promise<MaintenanceAlert[]> => {
+//     try {
+//       const query = status ? `?status=${status}` : '';
+//       return await request<MaintenanceAlert[]>(`${RULES_URL}/api/alerts${query}`);
+//     } catch (e: unknown) {
+//       if ((e as ApiError).status === 0)
+//         return status ? mockAlerts.filter((a) => a.status === status) : mockAlerts;
+//       throw e;
+//     }
+//   },
+// };
 
-// ─── Mantenimientos (rules-alerts-service) ────────────────────────────────────
+// ─── Mantenimientos — POST /api/maintenance  ← RegisterMaintenanceRequest.java
 
 export const maintenanceApi = {
   register: async (data: CreateMaintenanceDto): Promise<MaintenanceRecord> => {
@@ -217,7 +218,6 @@ export const maintenanceApi = {
           createdAt: now,
         };
         mockRecords.push(newRecord);
-        // Resolver alerta en mock
         if (data.alertId) {
           const alert = mockAlerts.find((a) => a.id === data.alertId);
           if (alert) alert.status = 'RESOLVED';
