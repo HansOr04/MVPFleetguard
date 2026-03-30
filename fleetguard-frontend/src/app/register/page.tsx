@@ -5,7 +5,8 @@ import { vehicleApi } from '@/lib/api';
 import { useToast } from '@/hooks/useToast';
 import { Toast } from '@/components/ui/Toast';
 import { CreateVehicleDto } from '@/types';
-import { mockVehicleTypes } from '@/lib/mockData';
+import { mockVehicleTypes } from '@/lib/mocks/mockVehicleTypes';
+import { mockFuelTypes } from '@/lib/mocks/mockFuelTypes';
 
 export default function RegisterVehiclePage() {
   const { toast, showToast } = useToast();
@@ -79,10 +80,11 @@ export default function RegisterVehiclePage() {
         <input name="model" value={formData.model} onChange={handleChange} required placeholder="Modelo" />
         <input name="year" value={formData.year} onChange={handleChange} required type="number" />
         <select name="fuelType" value={formData.fuelType} onChange={handleChange} required>
-          <option value="Gasolina">Gasolina</option>
-          <option value="Diésel">Diésel</option>
-          <option value="Híbrido">Híbrido</option>
-          <option value="Eléctrico">Eléctrico</option>
+          {mockFuelTypes.map((type) => (
+            <option key={type.id} value={type.name}>
+              {type.name}
+            </option>
+          ))}
         </select>
         <select name="vehicleTypeId" value={formData.vehicleTypeId} onChange={handleChange} required>
           <option value="">Seleccionar tipo...</option>

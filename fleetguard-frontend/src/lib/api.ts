@@ -11,7 +11,7 @@ import {
   AssociateVehicleTypeDto,
   CreateMaintenanceDto,
 } from '@/types';
-import { mockVehicles, mockRules, mockAlerts, mockRecords } from './mockData';
+import { mockVehicles, mockRules, mockAlerts, mockRecords } from './mocks/mockData';
 
 const FLEET_URL = process.env.NEXT_PUBLIC_FLEET_SERVICE_URL;
 const RULES_URL = process.env.NEXT_PUBLIC_RULES_SERVICE_URL;
