@@ -129,16 +129,14 @@ export const vehicleApi = {
 // ─── Reglas — POST /api/maintenance-rules  |  POST /{id}/vehicle-types ───────
 
 export const rulesApi = {
-  // // NOTA: GET /api/maintenance-rules no tiene controller visible en el backend
-  // // compartido. Se deja el endpoint esperado; ajustar si el backend lo expone.
-  // getAll: async (): Promise<MaintenanceRule[]> => {
-  //   try {
-  //     return await request<MaintenanceRule[]>(`${RULES_URL}/api/maintenance-rules`);
-  //   } catch (e: unknown) {
-  //     if ((e as ApiError).status === 0) return mockRules;
-  //     throw e;
-  //   }
-  // },
+  getAll: async (): Promise<MaintenanceRule[]> => {
+    try {
+      return await request<MaintenanceRule[]>(`${RULES_URL}/api/maintenance-rules`);
+    } catch (e: unknown) {
+      if ((e as ApiError).status === 0) return mockRules;
+      throw e;
+    }
+  },
 
   // POST /api/maintenance-rules  ← CreateMaintenanceRuleRequest.java
   create: async (data: CreateRuleDto): Promise<MaintenanceRule> => {
@@ -181,20 +179,20 @@ export const rulesApi = {
   },
 };
 
-// // ─── Alertas — GET /api/alerts (endpoint pendiente de confirmar en backend) ───
+// ─── Alertas — GET /api/alerts (endpoint pendiente de confirmar en backend) ───
 
-// export const alertsApi = {
-//   getAll: async (status?: string): Promise<MaintenanceAlert[]> => {
-//     try {
-//       const query = status ? `?status=${status}` : '';
-//       return await request<MaintenanceAlert[]>(`${RULES_URL}/api/alerts${query}`);
-//     } catch (e: unknown) {
-//       if ((e as ApiError).status === 0)
-//         return status ? mockAlerts.filter((a) => a.status === status) : mockAlerts;
-//       throw e;
-//     }
-//   },
-// };
+export const alertsApi = {
+  getAll: async (status?: string): Promise<MaintenanceAlert[]> => {
+    try {
+      const query = status ? `?status=${status}` : '';
+      return await request<MaintenanceAlert[]>(`${RULES_URL}/api/alerts${query}`);
+    } catch (e: unknown) {
+      if ((e as ApiError).status === 0)
+        return status ? mockAlerts.filter((a) => a.status === status) : mockAlerts;
+      throw e;
+    }
+  },
+};
 
 // ─── Mantenimientos — POST /api/maintenance  ← RegisterMaintenanceRequest.java
 

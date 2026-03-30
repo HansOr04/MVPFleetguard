@@ -2,16 +2,38 @@
 
 import React from 'react';
 
-export default function RulesPage() {    
+export default function RulesPage() {
+  return (
+    <div>
+      <h1>Reglas de Mantenimiento</h1>
 
-    return (
-        <div className="min-h-screen">
-            <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                    <h1 className="text-4xl font-bold mb-4">Reglas de Mantenimiento</h1>
-                    <p className="text-lg text-gray-600 mb-6">Aquí podrás configurar las reglas de mantenimiento para tus vehículos.</p>
-                </div>
-            </div>
-        </div>
-    );
+      <form>
+        <input name="name" placeholder="Nombre de la regla" />
+        <select name="maintenanceType">
+          <option value="PREVENTIVE">Preventivo</option>
+          <option value="CORRECTIVE">Correctivo</option>
+        </select>
+        <input name="intervalKm" type="number" placeholder="Intervalo (km)" />
+        <input name="warningThresholdKm" type="number" placeholder="Umbral aviso (km)" />
+        <button type="submit">Añadir Regla</button>
+      </form>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Intervalo</th>
+            <th>Umbral</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colSpan={5}>Cargando...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }
