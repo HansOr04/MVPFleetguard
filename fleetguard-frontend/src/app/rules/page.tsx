@@ -1,8 +1,12 @@
 'use client'
 
 import React from 'react';
+import { useToast } from '@/hooks/useToast';
+import { Toast } from '@/components/ui/Toast';
 
 export default function RulesPage() {
+  const { toast, showToast } = useToast();
+
   return (
     <div>
       <h1>Reglas de Mantenimiento</h1>
@@ -34,6 +38,8 @@ export default function RulesPage() {
           </tr>
         </tbody>
       </table>
+
+      <Toast message={toast.message} type={toast.type} visible={toast.visible} />
     </div>
   );
 }
