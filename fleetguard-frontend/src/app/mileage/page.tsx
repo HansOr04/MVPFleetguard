@@ -7,121 +7,239 @@ import { Toast } from '@/components/ui/Toast';
 import { MileageLog } from '@/types';
 
 export default function UpdateMileagePage() {
-  const { toast, showToast } = useToast();
-  const [plate, setPlate] = useState('');
-  const [newMileage, setNewMileage] = useState<number | ''>('');
-  const [recordedBy, setRecordedBy] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [lastResult, setLastResult] = useState<MileageLog | null>(null);
+	const { toast, showToast } = useToast();
+	const [plate, setPlate] = useState('');
+	const [newMileage, setNewMileage] = useState<number | ''>('');
+	const [recordedBy, setRecordedBy] = useState('');
+	const [submitting, setSubmitting] = useState(false);
+	const [lastResult, setLastResult] = useState<MileageLog | null>(null);
 
-  const isNegative = typeof newMileage === 'number' && newMileage < 0;
-  const isZero = newMileage === 0;
-  const isFormValid =
-    plate.length > 0 &&
-    newMileage !== '' &&
-    !isNegative &&
-    !isZero &&
-    recordedBy.trim().length > 0;
+	const isNegative = typeof newMileage === 'number' && newMileage < 0;
+	const isZero = newMileage === 0;
+	const isExcessive = lastResult !== null && lastResult.excessiveIncrement;
+	const isFormValid =
+		plate.length > 0 &&
+		newMileage !== '' &&
+		!isNegative &&
+		!isZero &&
+		recordedBy.trim().length > 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
-    setSubmitting(true);
-    try {
-      const result = await vehicleApi.updateMileage(plate.toUpperCase(), {
-        mileageValue: newMileage as number,
-        recordedBy: recordedBy,
-      });
-      setLastResult(result);
-      showToast('Odómetro actualizado correctamente', 'success');
-      setNewMileage('');
-      setRecordedBy('');
-    } catch (error: unknown) {
-      const e = error as { status?: number; message?: string; errors?: string[] };
-      if (e.status === 0) {
-        showToast('Sin conexión con el servidor', 'error');
-      } else if (e.status === 404) {
-        showToast('Vehículo no encontrado. Verifica la placa.', 'error');
-      } else if (e.status === 400 && e.errors) {
-        showToast(`Error de validación: ${e.errors.join(', ')}`, 'error');
-      } else {
-        showToast(e.message || 'Error al actualizar el kilometraje', 'error');
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!isFormValid) return;
+		setSubmitting(true);
+		try {
+			const result = await vehicleApi.updateMileage(plate.toUpperCase(), {
+				mileageValue: newMileage as number,
+				recordedBy: recordedBy,
+			});
+			setLastResult(result);
+			showToast('Odómetro actualizado correctamente', 'success');
+			setNewMileage('');
+			setRecordedBy('');
+		} catch (error: unknown) {
+			const e = error as { status?: number; message?: string; errors?: string[] };
+			if (e.status === 0) {
+				showToast('Sin conexión con el servidor', 'error');
+			} else if (e.status === 404) {
+				showToast('Vehículo no encontrado. Verifica la placa.', 'error');
+			} else if (e.status === 400 && e.errors) {
+				showToast(`Error de validación: ${e.errors.join(', ')}`, 'error');
+			} else {
+				showToast(e.message || 'Error al actualizar el kilometraje', 'error');
+			}
+		} finally {
+			setSubmitting(false);
+		}
+	};
 
-  return (
-    <div className="min-h-screen">
-      <div className="p-12 pt-24">
-        <h1 className="text-4xl font-bold mb-4">Actualizar Kilometraje</h1>
-        <p className="text-gray-600 mb-8">
-          Ingresa la placa del vehículo y el nuevo valor del odómetro.
-        </p>
+	return (
+		<div className="min-h-screen">
+			<div className="p-12 pt-24 max-w-5xl mx-auto">
 
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
-          <div>
-            <label>Placa del Vehículo</label>
-            <input
-              value={plate}
-              onChange={(e) => setPlate(e.target.value)}
-              placeholder="Ej: ABC-1234"
-              type="text"
-              required
-            />
-          </div>
+				<div className="mb-12">
+					<h2 className="text-4xl font-extrabold tracking-tight text-primary mb-2">
+						Actualizar Kilometraje
+					</h2>
+					<p className="text-on-surface-variant font-medium">
+						Ingresa la placa del vehículo y el nuevo valor del odómetro para mantener el registro actualizado.
+					</p>
+				</div>
 
-          <div>
-            <label>Nuevo Kilometraje</label>
-            <input
-              value={newMileage}
-              onChange={(e) =>
-                setNewMileage(e.target.value === '' ? '' : Number(e.target.value))
-              }
-              placeholder="0"
-              type="number"
-              min="1"
-              required
-              onWheel={(e) => e.currentTarget.blur()}
-            />
-            {isNegative && (
-              <p style={{ color: 'red' }}>El kilometraje no puede ser negativo.</p>
-            )}
-          </div>
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-          <div>
-            <label>Registrado por</label>
-            <input
-              value={recordedBy}
-              onChange={(e) => setRecordedBy(e.target.value)}
-              placeholder="Nombre del conductor o técnico"
-              type="text"
-              required
-            />
-          </div>
+					<div className="bg-surface-container-lowest rounded-xl shadow-sm p-8">
+						<form onSubmit={handleSubmit} className="space-y-6">
 
-          <button type="submit" disabled={!isFormValid || submitting}>
-            {submitting ? 'Guardando...' : 'Actualizar Odómetro'}
-          </button>
-        </form>
+							<div className="space-y-2">
+								<label className="block text-sm font-semibold text-on-surface-variant px-1">
+									Placa del Vehículo
+								</label>
+								<input
+									value={plate}
+									onChange={(e) => setPlate(e.target.value)}
+									placeholder="Ej: ABC-1234"
+									type="text"
+									required
+									className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all font-mono tracking-widest text-lg outline-none uppercase"
+								/>
+							</div>
 
-        {lastResult && (
-          <div style={{ marginTop: '2rem' }}>
-            {lastResult.excessiveIncrement && (
-              <p style={{ color: 'orange' }}>
-                Advertencia: Incremento inusualmente alto registrado. Verifica el odómetro físico.
-              </p>
-            )}
-            <p><strong>Placa:</strong> {lastResult.plate}</p>
-            <p><strong>Kilometraje registrado:</strong> {lastResult.mileageValue.toLocaleString()} km</p>
-            <p><strong>Odómetro actual:</strong> {lastResult.currentMileage.toLocaleString()} km</p>
-            <p><strong>Registrado por:</strong> {lastResult.recordedBy}</p>
-            <p><strong>Fecha:</strong> {new Date(lastResult.recordedAt).toLocaleString('es-CO')}</p>
-          </div>
-        )}
-      </div>
-      <Toast message={toast.message} type={toast.type} visible={toast.visible} />
-    </div>
-  );
+							<div className="space-y-2">
+								<label className="block text-sm font-semibold text-on-surface-variant px-1">
+									Nuevo Kilometraje
+								</label>
+								<div className="relative">
+									<input
+										value={newMileage}
+										onChange={(e) =>
+											setNewMileage(e.target.value === '' ? '' : Number(e.target.value))
+										}
+										placeholder="0"
+										type="number"
+										min="1"
+										required
+										onWheel={(e) => e.currentTarget.blur()}
+										className={`w-full border-none rounded-lg py-3 pl-4 pr-4 focus:ring-2 transition-all outline-none text-xl font-bold ${isNegative
+											? 'bg-error-container/30 focus:ring-error/20'
+											: 'bg-surface-container-highest focus:ring-secondary/20'
+											}`}
+									/>
+								</div>
+								{isNegative && (
+									<p className="text-[11px] text-error font-medium px-1">
+										El kilometraje no puede ser negativo.
+									</p>
+								)}
+							</div>
+
+							<div className="space-y-2">
+								<label className="block text-sm font-semibold text-on-surface-variant px-1">
+									Registrado por
+								</label>
+								<input
+									value={recordedBy}
+									onChange={(e) => setRecordedBy(e.target.value)}
+									placeholder="Nombre del conductor o técnico"
+									type="text"
+									required
+									className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all outline-none"
+								/>
+							</div>
+
+							<div className="pt-4 flex justify-end border-t border-slate-100">
+								<button
+									type="submit"
+									disabled={!isFormValid || submitting}
+									className="px-10 py-3 rounded-lg bg-secondary text-white font-bold shadow-lg shadow-secondary/20 hover:bg-on-secondary-container transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									{submitting ? (
+										<span className="material-symbols-outlined animate-spin text-sm">sync</span>
+									) : (
+										<span className="material-symbols-outlined text-sm">speed</span>
+									)}
+									Actualizar Odómetro
+								</button>
+							</div>
+						</form>
+					</div>
+
+					<div className="space-y-6">
+
+						{lastResult ? (
+							<div className="space-y-4">
+								{isExcessive && (
+									<div className="bg-[#FEF9C3] border-l-4 border-[#D69E2E] p-6 rounded-xl flex items-start gap-4">
+										<span
+											className="material-symbols-outlined text-[#D69E2E] mt-0.5"
+											style={{ fontVariationSettings: "'FILL' 1" }}
+										>
+											warning
+										</span>
+										<div>
+											<p className="font-bold text-[#856404] text-sm">
+												Incremento inusualmente alto registrado
+											</p>
+											<p className="text-[#856404] text-xs mt-1 opacity-80">
+												El sistema detectó un incremento elevado. El registro fue guardado. Se recomienda verificar el odómetro físico del vehículo.
+											</p>
+										</div>
+									</div>
+								)}
+
+								<div className="bg-surface-container-lowest rounded-xl shadow-sm p-8 border-l-4 border-secondary">
+									<div className="flex items-center gap-2 mb-6">
+										<span
+											className="material-symbols-outlined text-secondary"
+											style={{ fontVariationSettings: "'FILL' 1" }}
+										>
+											check_circle
+										</span>
+										<h3 className="text-lg font-bold text-primary">Registro Confirmado</h3>
+									</div>
+									<div className="space-y-4 text-sm">
+										<div className="flex justify-between">
+											<span className="text-on-surface-variant font-medium">Placa</span>
+											<span className="font-bold text-primary font-mono">{lastResult.plate}</span>
+										</div>
+										<div className="flex justify-between">
+											<span className="text-on-surface-variant font-medium">Kilometraje registrado</span>
+											<span className="font-bold text-primary">{lastResult.mileageValue.toLocaleString()} km</span>
+										</div>
+										<div className="flex justify-between">
+											<span className="text-on-surface-variant font-medium">Odómetro actual</span>
+											<span className="font-bold text-secondary">{lastResult.currentMileage.toLocaleString()} km</span>
+										</div>
+										<div className="flex justify-between">
+											<span className="text-on-surface-variant font-medium">Registrado por</span>
+											<span className="font-bold text-on-surface">{lastResult.recordedBy}</span>
+										</div>
+										<div className="flex justify-between">
+											<span className="text-on-surface-variant font-medium">Fecha</span>
+											<span className="font-medium text-on-surface">
+												{new Date(lastResult.recordedAt).toLocaleString('es-CO')}
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						) : (
+							<div className="bg-surface-container-low rounded-xl p-6 border-l-4 border-secondary">
+								<h4 className="font-bold text-primary mb-3 flex items-center gap-2">
+									<span
+										className="material-symbols-outlined text-secondary"
+										style={{ fontVariationSettings: "'FILL' 1" }}
+									>
+										info
+									</span>
+									Guía de Registro
+								</h4>
+								<ul className="text-sm text-on-surface-variant leading-relaxed space-y-2">
+									<li>• Ingresa la <strong>placa exacta</strong> tal como está registrada en el sistema.</li>
+									<li>• El kilometraje debe ser <strong>mayor a cero</strong>.</li>
+									<li>• El sistema avisará si el incremento es inusualmente alto una vez guardado.</li>
+								</ul>
+							</div>
+						)}
+
+						<div className="bg-primary text-white rounded-xl p-8 shadow-xl relative overflow-hidden">
+							<div className="absolute -right-12 -bottom-12 w-48 h-48 bg-secondary/10 rounded-full blur-3xl" />
+							<div className="relative z-10">
+								<span
+									className="material-symbols-outlined text-4xl text-secondary-container mb-4 block"
+									style={{ fontVariationSettings: "'FILL' 1" }}
+								>
+									speed
+								</span>
+								<p className="text-sm font-medium opacity-80 leading-relaxed">
+									Mantener el odómetro actualizado garantiza que las alertas de mantenimiento preventivo se generen en el momento correcto.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<Toast message={toast.message} type={toast.type} visible={toast.visible} />
+		</div>
+	);
 }
