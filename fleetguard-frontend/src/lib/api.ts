@@ -50,16 +50,6 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 // ─── Vehículos — POST /api/vehicles  |  POST /api/vehicles/{plate}/mileage ───
 
 export const vehicleApi = {
-  getAll: async (status?: string): Promise<Vehicle[]> => {
-    try {
-      const query = status ? `?status=${status}` : '';
-      return await request<Vehicle[]>(`${FLEET_URL}/api/vehicles${query}`);
-    } catch (e: unknown) {
-      if ((e as ApiError).status === 0)
-        return status ? mockVehicles.filter((v) => v.status === status) : mockVehicles;
-      throw e;
-    }
-  },
 
   getByPlate: async (plate: string): Promise<Vehicle> => {
     try {
