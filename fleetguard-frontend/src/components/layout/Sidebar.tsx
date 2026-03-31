@@ -12,7 +12,6 @@ export const Sidebar = () => {
     { path: '/register',  label: 'Registrar Vehículo',      icon: 'directions_car' },
     { path: '/rules',     label: 'Reglas de Mantenimiento',  icon: 'settings_applications' },
     { path: '/mileage',   label: 'Actualizar Kilometraje',   icon: 'speed' },
-    { path: '/alerts',    label: 'Centro de Alertas',        icon: 'notifications_active' },
     { path: '/services',  label: 'Registro de Servicios',    icon: 'history_edu' },
   ];
 

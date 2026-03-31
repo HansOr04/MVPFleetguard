@@ -2,7 +2,6 @@ import {
   Vehicle,
   MileageLog,
   MaintenanceRule,
-  MaintenanceAlert,
   MaintenanceRecord,
   ApiError,
   CreateVehicleDto,
@@ -50,19 +49,6 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 // ─── Vehículos — POST /api/vehicles  |  POST /api/vehicles/{plate}/mileage ───
 
 export const vehicleApi = {
-
-  getByPlate: async (plate: string): Promise<Vehicle> => {
-    try {
-      return await request<Vehicle>(`${FLEET_URL}/api/vehicles/${plate}`);
-    } catch (e: unknown) {
-      if ((e as ApiError).status === 0) {
-        const v = mockVehicles.find((v) => v.plate === plate);
-        if (v) return v;
-        throw { status: 404, message: 'Vehículo no encontrado' } as ApiError;
-      }
-      throw e;
-    }
-  },
 
   // POST /api/vehicles  ← RegisterVehicleRequest.java
   register: async (data: CreateVehicleDto): Promise<Vehicle> => {
@@ -119,15 +105,6 @@ export const vehicleApi = {
 // ─── Reglas — POST /api/maintenance-rules  |  POST /{id}/vehicle-types ───────
 
 export const rulesApi = {
-  getAll: async (): Promise<MaintenanceRule[]> => {
-    try {
-      return await request<MaintenanceRule[]>(`${RULES_URL}/api/maintenance-rules`);
-    } catch (e: unknown) {
-      if ((e as ApiError).status === 0) return mockRules;
-      throw e;
-    }
-  },
-
   // POST /api/maintenance-rules  ← CreateMaintenanceRuleRequest.java
   create: async (data: CreateRuleDto): Promise<MaintenanceRule> => {
     try {
@@ -164,21 +141,6 @@ export const rulesApi = {
       );
     } catch (e: unknown) {
       if ((e as ApiError).status === 0) return;
-      throw e;
-    }
-  },
-};
-
-// ─── Alertas — GET /api/alerts (endpoint pendiente de confirmar en backend) ───
-
-export const alertsApi = {
-  getAll: async (status?: string): Promise<MaintenanceAlert[]> => {
-    try {
-      const query = status ? `?status=${status}` : '';
-      return await request<MaintenanceAlert[]>(`${RULES_URL}/api/alerts${query}`);
-    } catch (e: unknown) {
-      if ((e as ApiError).status === 0)
-        return status ? mockAlerts.filter((a) => a.status === status) : mockAlerts;
       throw e;
     }
   },
