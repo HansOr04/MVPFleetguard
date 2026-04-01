@@ -22,19 +22,28 @@ export default function RulesPage() {
 
   const [formData, setFormData] = useState<RuleFormData>({
     name: '',
-    maintenanceType: 'PREVENTIVE',
+    maintenanceType: '',
     intervalKm: 0,
     warningThresholdKm: 0,
   });
+
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const isFormValid = !!formData.name && formData.intervalKm > 0 && !!formData.maintenanceType && selectedVehicleTypes.length > 0;
+
+  const isFormValid =
+    !!formData.name &&
+    formData.intervalKm > 0 &&
+    !!formData.maintenanceType &&
+    selectedVehicleTypes.length > 0;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'intervalKm' || name === 'warningThresholdKm' ? Number(value) : value,
+      [name]:
+        name === 'intervalKm' || name === 'warningThresholdKm'
+          ? Number(value)
+          : value,
     }));
   };
 
@@ -69,7 +78,12 @@ export default function RulesPage() {
         showToast('Regla de mantenimiento creada exitosamente', 'success');
       }
 
-      setFormData({ name: '', maintenanceType: 'PREVENTIVE', intervalKm: 0, warningThresholdKm: 0 });
+      setFormData({
+        name: '',
+        maintenanceType: '',
+        intervalKm: 0,
+        warningThresholdKm: 0,
+      });
       setSelectedVehicleTypes([]);
       refetch();
     } catch (error: unknown) {
@@ -96,6 +110,7 @@ export default function RulesPage() {
         <div className="grid grid-cols-12 gap-8">
 
           <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm p-8">
+            
             <div className="mb-8">
               <h3 className="text-xl font-bold text-primary flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">add_circle</span>
@@ -105,7 +120,9 @@ export default function RulesPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-on-surface-variant px-1">Nombre de la Regla</label>
+                  <label className="block text-sm font-semibold text-on-surface-variant px-1">
+                    Nombre de la Regla <span className="text-error">*</span>
+                  </label>
                   <input
                     required
                     name="name"
@@ -117,7 +134,9 @@ export default function RulesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-on-surface-variant px-1">Tipo de Mantenimiento</label>
+                  <label className="block text-sm font-semibold text-on-surface-variant px-1">
+                    Tipo de Mantenimiento <span className="text-error">*</span>
+                  </label>
                   <select
                     required
                     name="maintenanceType"
@@ -125,13 +144,20 @@ export default function RulesPage() {
                     onChange={handleChange}
                     className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all text-on-surface outline-none cursor-pointer"
                   >
+                    <option value="" disabled>
+                      Seleccionar tipo...
+                    </option>
                     {mockMaintenanceTypes.map((type) => (
-                      <option key={type.id} value={type.id}>{type.name}</option>
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-on-surface-variant px-1">Intervalo (km)</label>
+                  <label className="block text-sm font-semibold text-on-surface-variant px-1">
+                    Intervalo (km) <span className="text-error">*</span>
+                  </label>
                   <input
                     required
                     name="intervalKm"
@@ -144,8 +170,11 @@ export default function RulesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-on-surface-variant px-1">Umbral de Aviso (km)</label>
+                  <label className="block text-sm font-semibold text-on-surface-variant px-1">
+                    Umbral de Aviso (km) <span className="text-error">*</span>
+                  </label>
                   <input
+                    required
                     name="warningThresholdKm"
                     value={formData.warningThresholdKm || ''}
                     onChange={handleChange}
@@ -158,9 +187,15 @@ export default function RulesPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="block text-sm font-semibold text-on-surface-variant px-1">
-                  Tipos de vehículo a asociar
-                </label>
+                <div className="flex items-center gap-2 mb-8">
+                  <span className="material-symbols-outlined text-secondary">
+                    directions_car
+                  </span>
+                  <label className="text-xl font-bold text-primary flex items-center gap-2">
+                    Tipos de Vehículo a Asociar 
+                  </label>
+                </div>
+
                 <div className="flex flex-wrap gap-3">
                   {mockVehicleTypes.map((type) => {
                     const isSelected = selectedVehicleTypes.includes(type.id);
@@ -169,14 +204,12 @@ export default function RulesPage() {
                         key={type.id}
                         type="button"
                         onClick={() => handleCheckboxChange(type.id)}
-                        className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${isSelected
-                          ? 'bg-secondary text-white border-secondary shadow-sm'
-                          : 'bg-surface-container-highest text-on-surface-variant border-transparent hover:border-secondary/30'
-                          }`}
+                        className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
+                          isSelected
+                            ? 'bg-secondary text-white border-secondary shadow-sm'
+                            : 'bg-surface-container-highest text-on-surface-variant border-transparent hover:border-secondary/30'
+                        }`}
                       >
-                        {isSelected && (
-                          <span className="material-symbols-outlined text-[14px] mr-1 align-middle" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
-                        )}
                         {type.name}
                       </button>
                     );
@@ -195,9 +228,15 @@ export default function RulesPage() {
                   disabled={!isFormValid || submitting}
                   className="px-10 py-3 rounded-lg bg-secondary text-white font-bold shadow-lg shadow-secondary/20 hover:bg-on-secondary-container transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting
-                    ? <span className="material-symbols-outlined animate-spin text-sm">sync</span>
-                    : <span className="material-symbols-outlined text-sm">save</span>}
+                  {submitting ? (
+                    <span className="material-symbols-outlined animate-spin text-sm">
+                      sync
+                    </span>
+                  ) : (
+                    <span className="material-symbols-outlined text-sm">
+                      save
+                    </span>
+                  )}
                   Crear Regla
                 </button>
               </div>
