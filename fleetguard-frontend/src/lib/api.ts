@@ -17,8 +17,6 @@ const RULES_URL = process.env.NEXT_PUBLIC_RULES_SERVICE_URL;
 
 let demoModeActive = false;
 
-// ─── Helper genérico ─────────────────────────────────────────────────────────
-
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   try {
     const response = await fetch(url, {
@@ -46,11 +44,11 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   }
 }
 
-// ─── Vehículos — POST /api/vehicles  |  POST /api/vehicles/{plate}/mileage ───
+// ─── Vehículos ────────────────────────────────────────────────────────────────
 
 export const vehicleApi = {
 
-  // POST /api/vehicles  ← RegisterVehicleRequest.java
+  // POST /api/vehicles
   register: async (data: CreateVehicleDto): Promise<Vehicle> => {
     try {
       return await request<Vehicle>(`${FLEET_URL}/api/vehicles`, {
@@ -75,7 +73,7 @@ export const vehicleApi = {
     }
   },
 
-  // POST /api/vehicles/{plate}/mileage  ← RegisterMileageRequest.java
+  // POST /api/vehicles/{plate}/mileage
   updateMileage: async (plate: string, data: UpdateMileageDto): Promise<MileageLog> => {
     try {
       return await request<MileageLog>(
@@ -87,7 +85,7 @@ export const vehicleApi = {
         const v = mockVehicles.find((v) => v.plate === plate);
         if (v) v.currentMileage = data.mileageValue;
         return {
-          mileageLogId: crypto.randomUUID(), 
+          mileageLogId: crypto.randomUUID(),
           vehicleId: v?.id ?? '',
           plate,
           mileageValue: data.mileageValue,
@@ -102,10 +100,21 @@ export const vehicleApi = {
   },
 };
 
-// ─── Reglas — POST /api/maintenance-rules  |  POST /{id}/vehicle-types ───────
+// ─── Reglas ───────────────────────────────────────────────────────────────────
 
 export const rulesApi = {
-  // POST /api/maintenance-rules  ← CreateMaintenanceRuleRequest.java
+
+  // GET /api/maintenance-rules
+  getAll: async (): Promise<MaintenanceRule[]> => {
+    try {
+      return await request<MaintenanceRule[]>(`${RULES_URL}/api/maintenance-rules`);
+    } catch (e: unknown) {
+      if ((e as ApiError).status === 0) return mockRules;
+      throw e;
+    }
+  },
+
+  // POST /api/maintenance-rules
   create: async (data: CreateRuleDto): Promise<MaintenanceRule> => {
     try {
       return await request<MaintenanceRule>(`${RULES_URL}/api/maintenance-rules`, {
@@ -129,11 +138,8 @@ export const rulesApi = {
     }
   },
 
-  // POST /api/maintenance-rules/{id}/vehicle-types  ← AssociateVehicleTypeRequest.java
-  associateVehicleType: async (
-    ruleId: string,
-    data: AssociateVehicleTypeDto,
-  ): Promise<void> => {
+  // POST /api/maintenance-rules/{id}/vehicle-types
+  associateVehicleType: async (ruleId: string, data: AssociateVehicleTypeDto): Promise<void> => {
     try {
       await request<void>(
         `${RULES_URL}/api/maintenance-rules/${ruleId}/vehicle-types`,
@@ -146,31 +152,43 @@ export const rulesApi = {
   },
 };
 
-// ─── Mantenimientos — POST /api/maintenance  ← RegisterMaintenanceRequest.java
+// ─── Mantenimientos ───────────────────────────────────────────────────────────
 
 export const maintenanceApi = {
+
+  // POST /api/maintenance/{plate}
   register: async (data: CreateMaintenanceDto): Promise<MaintenanceRecord> => {
+    const plate = data.plate.trim().toUpperCase();
+    const { plate: _, ...body } = data;
     try {
-      return await request<MaintenanceRecord>(`${RULES_URL}/api/maintenance`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return await request<MaintenanceRecord>(
+        `${RULES_URL}/api/maintenance/${plate}`,
+        { method: 'POST', body: JSON.stringify(body) },
+      );
     } catch (e: unknown) {
       if ((e as ApiError).status === 0) {
         const now = new Date().toISOString();
+        const v = mockVehicles.find((v) => v.plate === plate);
         const newRecord: MaintenanceRecord = {
-          ...data,
           id: crypto.randomUUID(),
+          plate,
+          alertId: data.alertId ?? null,
+          ruleId: data.ruleId ?? null,
+          serviceType: data.serviceType,
           description: data.description ?? null,
           cost: data.cost ?? null,
           provider: data.provider ?? null,
           performedAt: data.performedAt ?? now,
+          mileageAtService: data.mileageAtService,
           createdAt: now,
         };
         mockRecords.push(newRecord);
         if (data.alertId) {
           const alert = mockAlerts.find((a) => a.id === data.alertId);
           if (alert) alert.status = 'RESOLVED';
+        }
+        if (v && data.mileageAtService > v.currentMileage) {
+          v.currentMileage = data.mileageAtService;
         }
         return newRecord;
       }
@@ -180,3 +198,22 @@ export const maintenanceApi = {
 };
 
 export const isDemoMode = () => demoModeActive;
+
+// ─── Alertas ──────────────────────────────────────────────────────────────────
+
+export const alertsApi = {
+
+  // GET /api/alerts?status=
+  getByVehicleId: async (vehicleId: string): Promise<MaintenanceAlert[]> => {
+    try {
+      const all = await request<MaintenanceAlert[]>(`${RULES_URL}/api/alerts`);
+      return all.filter((a) => a.vehicleId === vehicleId);
+    } catch (e: unknown) {
+      if ((e as ApiError).status === 0) {
+        return mockAlerts.filter((a) => a.vehicleId === vehicleId &&
+          ['PENDING', 'WARNING', 'OVERDUE'].includes(a.status));
+      }
+      throw e;
+    }
+  },
+};

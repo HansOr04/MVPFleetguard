@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,18 +12,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MaintenanceRecordResponse {
-
+public class MaintenanceAlertResponse {
     private UUID id;
     private UUID vehicleId;
-    private String plate;
-    private UUID alertId;
+    private UUID vehicleTypeId;
     private UUID ruleId;
-    private String serviceType;
-    private String description;
-    private BigDecimal cost;
-    private String provider;
-    private LocalDateTime performedAt;
-    private long mileageAtService;
-    private LocalDateTime createdAt;
+    private String status;
+    private LocalDateTime triggeredAt;
+    private Long dueAtKm;
 }

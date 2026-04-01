@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -40,6 +41,21 @@ public class MaintenanceAlertRepositoryAdapter implements MaintenanceAlertReposi
     public List<MaintenanceAlert> findActiveByVehicleId(UUID vehicleId) {
         return maintenanceAlertJpaRepository
                 .findByVehicleIdAndStatusIn(vehicleId, List.of("PENDING", "WARNING"))
+                .stream()
+                .map(MaintenanceAlertPersistenceMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<MaintenanceAlert> findById(UUID id) {
+        return maintenanceAlertJpaRepository.findById(id)
+                .map(MaintenanceAlertPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public List<MaintenanceAlert> findAllActive() {
+        return maintenanceAlertJpaRepository
+                .findByStatusIn(List.of("PENDING", "WARNING", "OVERDUE"))
                 .stream()
                 .map(MaintenanceAlertPersistenceMapper::toDomain)
                 .toList();

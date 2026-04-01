@@ -22,7 +22,8 @@ public interface RegisterMileageUseCase {
             long currentMileage,
             String recordedBy,
             LocalDateTime recordedAt,
-            boolean excessiveIncrement
+            boolean excessiveIncrement,
+            UUID alertId
     ) {
     }
 }

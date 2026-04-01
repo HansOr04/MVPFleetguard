@@ -10,10 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,11 +20,12 @@ public class MaintenanceController {
     private final RegisterMaintenanceUseCase registerMaintenanceUseCase;
     private final MaintenanceWebMapper maintenanceWebMapper;
 
-    @PostMapping
+    @PostMapping("/{plate}")
     public ResponseEntity<MaintenanceRecordResponse> registerMaintenance(
+            @PathVariable String plate,
             @Valid @RequestBody RegisterMaintenanceRequest request) {
 
-        RegisterMaintenanceCommand command = maintenanceWebMapper.toCommand(request);
+        RegisterMaintenanceCommand command = maintenanceWebMapper.toCommand(plate.toUpperCase(), request);
         RegisterMaintenanceResponse result = registerMaintenanceUseCase.execute(command);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(maintenanceWebMapper.toResponse(result));

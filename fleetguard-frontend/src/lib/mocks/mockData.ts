@@ -58,7 +58,7 @@ export const mockVehicles: Vehicle[] = [
 
 export const mockRules: MaintenanceRule[] = [
   {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567801',
+    id: 'rule-0001-0000-0000-000000000001',
     name: 'Cambio de Aceite',
     maintenanceType: 'PREVENTIVE',
     intervalKm: 10000,
@@ -68,7 +68,7 @@ export const mockRules: MaintenanceRule[] = [
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567802',
+    id: 'rule-0001-0000-0000-000000000002',
     name: 'Rotación de Llantas',
     maintenanceType: 'PREVENTIVE',
     intervalKm: 15000,
@@ -78,7 +78,7 @@ export const mockRules: MaintenanceRule[] = [
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567803',
+    id: 'rule-0001-0000-0000-000000000003',
     name: 'Revisión de Frenos',
     maintenanceType: 'PREVENTIVE',
     intervalKm: 20000,
@@ -91,28 +91,28 @@ export const mockRules: MaintenanceRule[] = [
 
 export const mockAlerts: MaintenanceAlert[] = [
   {
-    id: 'b1c2d3e4-f5a6-7890-bcde-fa1234567801',
+    id: 'alert-001-0000-0000-000000000001',
     vehicleId: '550e8400-e29b-41d4-a716-446655440002',
-    vehicleTypeId: 'c1a1d13e-b3df-4fab-9584-890b852d5315',
-    ruleId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567801',
+    vehicleTypeId: 'vtype-001-0000-0000-000000000001',
+    ruleId: 'rule-0001-0000-0000-000000000001',
     status: 'PENDING',
     triggeredAt: '2024-11-01T00:00:00Z',
     dueAtKm: 50000,
   },
   {
-    id: 'b1c2d3e4-f5a6-7890-bcde-fa1234567802',
+    id: 'alert-001-0000-0000-000000000002',
     vehicleId: '550e8400-e29b-41d4-a716-446655440003',
-    vehicleTypeId: 'c1a1d13e-b3df-4fab-9584-890b852d5311',
-    ruleId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567803',
+    vehicleTypeId: 'vtype-001-0000-0000-000000000002',
+    ruleId: 'rule-0001-0000-0000-000000000003',
     status: 'PENDING',
     triggeredAt: '2024-11-10T00:00:00Z',
     dueAtKm: 20000,
   },
   {
-    id: 'b1c2d3e4-f5a6-7890-bcde-fa1234567803',
+    id: 'alert-001-0000-0000-000000000003',
     vehicleId: '550e8400-e29b-41d4-a716-446655440001',
-    vehicleTypeId: 'c1a1d13e-b3df-4fab-9584-890b852d5315',
-    ruleId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567801',
+    vehicleTypeId: 'vtype-001-0000-0000-000000000001',
+    ruleId: 'rule-0001-0000-0000-000000000001',
     status: 'RESOLVED',
     triggeredAt: '2024-09-01T00:00:00Z',
     dueAtKm: 40000,
@@ -121,10 +121,10 @@ export const mockAlerts: MaintenanceAlert[] = [
 
 export const mockRecords: MaintenanceRecord[] = [
   {
-    id: 'd1e2f3a4-b5c6-7890-defa-bc1234567801',
-    vehicleId: '550e8400-e29b-41d4-a716-446655440001',
-    alertId: 'b1c2d3e4-f5a6-7890-bcde-fa1234567803',
-    ruleId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567801',
+    id: 'rec-00001-0000-0000-000000000001',
+    plate: 'ABC-1234',
+    alertId: 'alert-001-0000-0000-000000000003',
+    ruleId: 'rule-0001-0000-0000-000000000001',
     serviceType: 'Cambio de Aceite',
     description: 'Aceite sintético 5W-30',
     cost: 150,

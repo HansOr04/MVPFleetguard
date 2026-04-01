@@ -13,4 +13,6 @@ public interface MaintenanceAlertJpaRepository extends JpaRepository<Maintenance
     List<MaintenanceAlertJpaEntity> findByStatus(String status);
 
     List<MaintenanceAlertJpaEntity> findByVehicleIdAndStatusIn(UUID vehicleId, List<String> statuses);
+
+    List<MaintenanceAlertJpaEntity> findByStatusIn(List<String> statuses);
 }

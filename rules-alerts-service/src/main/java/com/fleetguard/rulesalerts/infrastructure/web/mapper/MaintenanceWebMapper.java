@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class MaintenanceWebMapper {
 
-    public RegisterMaintenanceCommand toCommand(RegisterMaintenanceRequest request) {
+    public RegisterMaintenanceCommand toCommand(String plate, RegisterMaintenanceRequest request) {
         return new RegisterMaintenanceCommand(
-                request.getVehicleId(),
+                plate,
                 request.getAlertId(),
                 request.getRuleId(),
                 request.getServiceType(),
@@ -27,6 +27,7 @@ public class MaintenanceWebMapper {
         return MaintenanceRecordResponse.builder()
                 .id(response.id())
                 .vehicleId(response.vehicleId())
+                .plate(response.plate())
                 .alertId(response.alertId())
                 .ruleId(response.ruleId())
                 .serviceType(response.serviceType())

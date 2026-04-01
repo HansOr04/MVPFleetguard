@@ -1,5 +1,6 @@
 package com.fleetguard.fleet.infrastructure.web.mapper;
 
+import com.fleetguard.fleet.application.ports.in.GetVehicleByPlateUseCase.GetVehicleByPlateResponse;
 import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase.RegisterVehicleCommand;
 import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase.RegisterVehicleResponse;
 import com.fleetguard.fleet.infrastructure.web.dto.request.RegisterVehicleRequest;
@@ -22,6 +23,21 @@ public class VehicleWebMapper {
     }
 
     public VehicleResponse toResponse(RegisterVehicleResponse response) {
+        return new VehicleResponse(
+                response.id(),
+                response.plate(),
+                response.brand(),
+                response.model(),
+                response.year(),
+                response.fuelType(),
+                response.vin(),
+                response.status(),
+                response.currentMileage(),
+                response.vehicleTypeName()
+        );
+    }
+
+    public VehicleResponse toResponse(GetVehicleByPlateResponse response) {
         return new VehicleResponse(
                 response.id(),
                 response.plate(),

@@ -9,7 +9,7 @@ public interface RegisterMaintenanceUseCase {
     RegisterMaintenanceResponse execute(RegisterMaintenanceCommand command);
 
     record RegisterMaintenanceCommand(
-            UUID vehicleId,
+            String plate,
             UUID alertId,
             UUID ruleId,
             String serviceType,
@@ -24,6 +24,7 @@ public interface RegisterMaintenanceUseCase {
     record RegisterMaintenanceResponse(
             UUID id,
             UUID vehicleId,
+            String plate,
             UUID alertId,
             UUID ruleId,
             String serviceType,

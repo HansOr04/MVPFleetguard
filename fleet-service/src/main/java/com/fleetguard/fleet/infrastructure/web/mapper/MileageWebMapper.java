@@ -26,7 +26,8 @@ public class MileageWebMapper {
                 response.currentMileage(),
                 response.recordedBy(),
                 response.recordedAt(),
-                response.excessiveIncrement()
+                response.excessiveIncrement(),
+                response.alertId()
         );
     }
 }

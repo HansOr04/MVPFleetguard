@@ -19,7 +19,6 @@ export interface VehicleType {
   description: string
 }
 
-// MileageResponse.java
 export interface MileageLog {
   mileageLogId: string   
   vehicleId: string
@@ -29,9 +28,9 @@ export interface MileageLog {
   recordedBy: string
   recordedAt: string
   excessiveIncrement: boolean
+  alertId: string | null
 }
 
-// MaintenanceRuleResponse.java
 export interface MaintenanceRule {
   id: string
   name: string
@@ -43,7 +42,6 @@ export interface MaintenanceRule {
   updatedAt: string
 }
 
-// RuleVehicleTypeAssocResponse.java
 export interface RuleVehicleTypeAssoc {
   id: string
   ruleId: string
@@ -51,7 +49,6 @@ export interface RuleVehicleTypeAssoc {
   createdAt: string
 }
 
-// MaintenanceAlert (generado internamente por rules-alerts-service)
 export interface MaintenanceAlert {
   id: string
   vehicleId: string
@@ -62,10 +59,9 @@ export interface MaintenanceAlert {
   dueAtKm: number
 }
 
-// MaintenanceRecordResponse.java
 export interface MaintenanceRecord {
   id: string
-  vehicleId: string
+  plate: string
   alertId: string | null
   ruleId: string | null
   serviceType: string
@@ -85,7 +81,6 @@ export interface ApiError {
 
 // ─── DTOs (lo que se envía al backend) ──────────────────────────────────────
 
-// fleet-service — RegisterVehicleRequest.java
 export interface CreateVehicleDto {
   plate: string
   brand: string
@@ -96,13 +91,11 @@ export interface CreateVehicleDto {
   vehicleTypeId: string  
 }
 
-// fleet-service — RegisterMileageRequest.java
 export interface UpdateMileageDto {
   mileageValue: number   
   recordedBy: string
 }
 
-// rules-alerts-service — CreateMaintenanceRuleRequest.java
 export interface CreateRuleDto {
   name: string
   maintenanceType: string
@@ -110,14 +103,12 @@ export interface CreateRuleDto {
   warningThresholdKm: number
 }
 
-// rules-alerts-service — AssociateVehicleTypeRequest.java
 export interface AssociateVehicleTypeDto {
   vehicleTypeId: string  
 }
 
-// rules-alerts-service — RegisterMaintenanceRequest.java
 export interface CreateMaintenanceDto {
-  vehicleId: string      
+  plate: string
   alertId: string | null
   ruleId: string | null
   serviceType: string    
