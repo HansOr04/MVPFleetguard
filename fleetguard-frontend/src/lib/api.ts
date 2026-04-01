@@ -3,6 +3,7 @@ import {
   MileageLog,
   MaintenanceRule,
   MaintenanceRecord,
+  MaintenanceAlert,
   ApiError,
   CreateVehicleDto,
   UpdateMileageDto,
@@ -93,6 +94,7 @@ export const vehicleApi = {
           recordedBy: data.recordedBy,
           recordedAt: new Date().toISOString(),
           excessiveIncrement: false,
+          alertId: null,
         };
       }
       throw e;
@@ -204,6 +206,23 @@ export const isDemoMode = () => demoModeActive;
 export const alertsApi = {
 
   // GET /api/alerts?status=
+  getAll: async (status?: string): Promise<MaintenanceAlert[]> => {
+    const url = status
+      ? `${RULES_URL}/api/alerts?status=${status}`
+      : `${RULES_URL}/api/alerts`;
+    try {
+      return await request<MaintenanceAlert[]>(url);
+    } catch (e: unknown) {
+      if ((e as ApiError).status === 0) {
+        return status
+          ? mockAlerts.filter((a) => a.status === status)
+          : mockAlerts.filter((a) => ['PENDING', 'WARNING', 'OVERDUE'].includes(a.status));
+      }
+      throw e;
+    }
+  },
+
+  // GET /api/alerts filtrado por vehicleId (client-side)
   getByVehicleId: async (vehicleId: string): Promise<MaintenanceAlert[]> => {
     try {
       const all = await request<MaintenanceAlert[]>(`${RULES_URL}/api/alerts`);
