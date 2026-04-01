@@ -15,25 +15,34 @@ export default function RegisterVehiclePage() {
     vin: '',
     brand: '',
     model: '',
-    year: new Date().getFullYear(),
-    fuelType: 'Diésel',
+    year: '' as unknown as number,
+    fuelType: '',
     vehicleTypeId: '',
   });
   const [plateError, setPlateError] = useState('');
   const [loading, setLoading] = useState(false);
-
+  
   const isVinValid = formData.vin.length === 17;
   const isPlateValid = formData.plate.length > 0;
   const isFormValid =
-    isVinValid &&
-    isPlateValid &&
-    !!formData.brand &&
-    !!formData.model &&
-    !!formData.year &&
-    !!formData.vehicleTypeId;
-
+  isVinValid &&
+  isPlateValid &&
+  !!formData.brand &&
+  !!formData.model &&
+  !!formData.year &&
+  !!formData.vehicleTypeId &&
+  !!formData.fuelType;
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const parsedValue =
+      name === 'plate'
+        ? value.toUpperCase()
+        : name === 'year'
+          ? (value === '' ? '' : Number(value))
+          : value;
+
+    setFormData({ ...formData, [name]: parsedValue });
     if (e.target.name === 'plate') setPlateError('');
   };
 
@@ -49,8 +58,8 @@ export default function RegisterVehiclePage() {
         vin: '',
         brand: '',
         model: '',
-        year: new Date().getFullYear(),
-        fuelType: 'Diésel',
+        year: '' as unknown as number,
+        fuelType: '',
         vehicleTypeId: '',
       });
     } catch (error: unknown) {
@@ -95,14 +104,14 @@ export default function RegisterVehiclePage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Placa</label>
+                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Placa <span className="text-error">*</span></label>
                     <div className="relative group">
                       <input
                         name="plate"
                         value={formData.plate}
                         onChange={handleChange}
                         required
-                        className={`w-full ${plateError ? 'bg-error-container/30 focus:ring-error/20' : 'bg-surface-container-highest focus:ring-secondary/20'} border-none rounded-lg py-3 px-4 focus:ring-2 transition-all font-mono tracking-widest text-lg outline-none`}
+                        className={`w-full ${plateError ? 'bg-error-container/30 focus:ring-error/20' : 'bg-surface-container-highest focus:ring-secondary/20'} border-none rounded-lg py-3 px-4 focus:ring-2 transition-all font-mono tracking-widest text-lg outline-none uppercase`}
                         placeholder="Ej: ABC-1234"
                         type="text"
                       />
@@ -120,7 +129,7 @@ export default function RegisterVehiclePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Número de Serie (VIN)</label>
+                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Número de Serie (VIN) <span className="text-error">*</span></label>
                     <div className="relative group">
                       <input
                         name="vin"
@@ -156,29 +165,46 @@ export default function RegisterVehiclePage() {
                   <div className="md:col-span-2">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-on-surface-variant px-1">Marca</label>
+                        <label className="block text-sm font-semibold text-on-surface-variant px-1">Marca <span className="text-error">*</span></label>
                         <input name="brand" value={formData.brand} onChange={handleChange} required className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all outline-none" placeholder="Ej: Toyota" type="text" />
                       </div>
                       <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-on-surface-variant px-1">Modelo</label>
+                        <label className="block text-sm font-semibold text-on-surface-variant px-1">Modelo <span className="text-error">*</span></label>
                         <input name="model" value={formData.model} onChange={handleChange} required className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all outline-none" placeholder="Ej: Hilux" type="text" />
                       </div>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Año</label>
-                    <input name="year" value={formData.year} onChange={handleChange} required className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all outline-none" type="number" />
+                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Año <span className="text-error">*</span></label>
+                    <select
+                      name="year"
+                      value={formData.year}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all cursor-pointer outline-none"
+                    >
+                      <option value="">Seleccionar año...</option>
+                      {Array.from({ length: 30 }, (_, i) => {
+                        const year = new Date().getFullYear() - i;
+                        return (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Tipo Combustible</label>
+                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Tipo Combustible <span className="text-error">*</span></label>
                     <select name="fuelType" value={formData.fuelType} onChange={handleChange} required className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all cursor-pointer outline-none">
+                      <option value="">Seleccionar tipo...</option>
                       {mockFuelTypes.map((type) => (
                         <option key={type.id} value={type.name}>{type.name}</option>
                       ))}
                     </select>
                   </div>
                   <div className="md:col-span-2 space-y-2">
-                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Tipo de Vehículo</label>
+                    <label className="block text-sm font-semibold text-on-surface-variant px-1">Tipo de Vehículo <span className="text-error">*</span></label>
                     <select name="vehicleTypeId" value={formData.vehicleTypeId} onChange={handleChange} required className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all cursor-pointer outline-none">
                       <option value="">Seleccionar categoría...</option>
                       {mockVehicleTypes.map((type) => (
