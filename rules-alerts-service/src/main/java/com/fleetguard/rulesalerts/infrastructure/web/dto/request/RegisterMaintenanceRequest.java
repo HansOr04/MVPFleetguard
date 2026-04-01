@@ -19,9 +19,6 @@ import java.util.UUID;
 @Builder
 public class RegisterMaintenanceRequest {
 
-    @NotNull(message = "El vehicleId es obligatorio.")
-    private UUID vehicleId;
-
     private UUID alertId;
 
     private UUID ruleId;

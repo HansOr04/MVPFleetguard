@@ -75,7 +75,8 @@ public class RegisterMileageService implements RegisterMileageUseCase {
                 vehicle.getCurrentMileage().getValue(),
                 savedLog.getRecordedBy(),
                 savedLog.getRecordedAt(),
-                excessiveIncrement
+                excessiveIncrement,
+                null
         );
     }
 }
