@@ -85,7 +85,7 @@ export default function UpdateMileagePage() {
 
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-on-surface-variant px-1">
-                  Placa del Vehículo
+                  Placa del Vehículo <span className="text-error">*</span>
                 </label>
                 <input
                   value={plate}
@@ -99,7 +99,7 @@ export default function UpdateMileagePage() {
 
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-on-surface-variant px-1">
-                  Nuevo Kilometraje
+                  Nuevo Kilometraje <span className="text-error">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -127,7 +127,7 @@ export default function UpdateMileagePage() {
 
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-on-surface-variant px-1">
-                  Registrado por
+                  Registrado por <span className="text-error">*</span>
                 </label>
                 <input
                   value={recordedBy}
