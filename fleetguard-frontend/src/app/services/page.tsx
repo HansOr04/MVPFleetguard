@@ -173,7 +173,7 @@ function ServicesContent() {
                     >
                       {loadingAlerts
                         ? <span className="material-symbols-outlined animate-spin text-sm">sync</span>
-                        : null}
+                        : <span className="material-symbols-outlined text-sm">notifications_active</span>}
                       Consultar alertas
                     </button>
                   </div>
@@ -208,11 +208,10 @@ function ServicesContent() {
                             key={alert.id}
                             type="button"
                             onClick={() => setSelectedAlert(isSelected ? null : alert)}
-                            className={`w-full text-left rounded-xl p-4 border-2 transition-all ${
-                              isSelected
-                                ? 'border-secondary bg-secondary/5'
-                                : 'border-transparent bg-surface-container-high hover:border-secondary/30'
-                            }`}
+                            className={`w-full text-left rounded-xl p-4 border-2 transition-all ${isSelected
+                              ? 'border-secondary bg-secondary/5'
+                              : 'border-transparent bg-surface-container-high hover:border-secondary/30'
+                              }`}
                           >
                             <div className="flex items-center justify-between gap-4">
                               <div className="flex-1">
