@@ -316,10 +316,11 @@ export default function RegisterVehiclePage() {
                 <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
                 Guía de Registro
               </h4>
-              <p className="text-sm text-on-surface-variant leading-relaxed">
-                Asegúrese de que el <strong>VIN</strong> coincida exactamente con la placa física del vehículo.
-                Este dato es inmutable una vez registrado y se utiliza para el seguimiento de garantías y seguros.
-              </p>
+              <ul className="text-sm text-on-surface-variant leading-relaxed space-y-3">
+                <li>• Asegúrate de que el <strong>VIN</strong> coincida exactamente con la placa física del vehículo.
+                Este dato es inmutable una vez registrado y se utiliza para el seguimiento de garantías y seguros.</li>
+                <li>• Selecciona el <strong>tipo de vehículo</strong> más adecuado para el registro.</li>
+              </ul>
             </div>
           </div>
         </div>
