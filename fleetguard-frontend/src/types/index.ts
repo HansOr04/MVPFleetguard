@@ -20,7 +20,7 @@ export interface VehicleType {
 }
 
 export interface MileageLog {
-  mileageLogId: string   
+  mileageLogId: string
   vehicleId: string
   plate: string
   mileageValue: number
@@ -54,6 +54,7 @@ export interface MaintenanceAlert {
   vehicleId: string
   vehicleTypeId: string
   ruleId: string
+  ruleName?: string
   status: 'PENDING' | 'WARNING' | 'OVERDUE' | 'RESOLVED'
   triggeredAt: string
   dueAtKm: number
@@ -66,7 +67,7 @@ export interface MaintenanceRecord {
   ruleId: string | null
   serviceType: string
   description: string | null
-  cost: number | null       
+  cost: number | null
   provider: string | null
   performedAt: string
   mileageAtService: number
@@ -88,33 +89,32 @@ export interface CreateVehicleDto {
   year: number
   fuelType: string
   vin: string
-  vehicleTypeId: string  
+  vehicleTypeId: string
 }
 
 export interface UpdateMileageDto {
-  mileageValue: number   
+  mileageValue: number
   recordedBy: string
 }
 
 export interface CreateRuleDto {
   name: string
   maintenanceType: string
-  intervalKm: number     
+  intervalKm: number
   warningThresholdKm: number
 }
 
 export interface AssociateVehicleTypeDto {
-  vehicleTypeId: string  
+  vehicleTypeId: string
 }
 
 export interface CreateMaintenanceDto {
   plate: string
-  alertId: string | null
-  ruleId: string | null
-  serviceType: string    
+  alertId: string
+  serviceType: string
   description: string | null
-  cost: number | null    
+  cost: number | null
   provider: string | null
   performedAt: string | null
-  mileageAtService: number   
+  mileageAtService: number
 }
