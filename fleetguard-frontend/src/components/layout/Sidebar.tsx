@@ -8,7 +8,7 @@ export const Sidebar = () => {
   const isActive = (path: string) => pathname === path;
 
   const navItems = [
-    { path: '/',          label: 'Dashboard',               icon: 'dashboard' },
+    { path: '/',          label: 'Home',               icon: 'home' },
     { path: '/register',  label: 'Registrar Vehículo',      icon: 'directions_car' },
     { path: '/rules',     label: 'Reglas de Mantenimiento',  icon: 'settings_applications' },
     { path: '/mileage',   label: 'Actualizar Kilometraje',   icon: 'speed' },
