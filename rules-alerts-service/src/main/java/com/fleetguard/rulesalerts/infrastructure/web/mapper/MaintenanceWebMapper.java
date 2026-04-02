@@ -13,7 +13,6 @@ public class MaintenanceWebMapper {
         return new RegisterMaintenanceCommand(
                 plate,
                 request.getAlertId(),
-                request.getRuleId(),
                 request.getServiceType(),
                 request.getDescription(),
                 request.getCost(),

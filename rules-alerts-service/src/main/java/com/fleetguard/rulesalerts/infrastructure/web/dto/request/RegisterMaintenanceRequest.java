@@ -19,9 +19,8 @@ import java.util.UUID;
 @Builder
 public class RegisterMaintenanceRequest {
 
+    @NotNull(message = "El ID de la alerta es obligatorio.")
     private UUID alertId;
-
-    private UUID ruleId;
 
     @NotBlank(message = "El tipo de servicio es obligatorio.")
     private String serviceType;
@@ -33,6 +32,7 @@ public class RegisterMaintenanceRequest {
 
     private String provider;
 
+    @NotNull(message = "La fecha del servicio es obligatoria.")
     private LocalDateTime performedAt;
 
     @NotNull(message = "El kilometraje del servicio es obligatorio.")

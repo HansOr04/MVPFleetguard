@@ -49,7 +49,6 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 
 export const vehicleApi = {
 
-  // POST /api/vehicles
   register: async (data: CreateVehicleDto): Promise<Vehicle> => {
     try {
       return await request<Vehicle>(`${FLEET_URL}/api/vehicles`, {
@@ -74,7 +73,6 @@ export const vehicleApi = {
     }
   },
 
-  // POST /api/vehicles/{plate}/mileage
   updateMileage: async (plate: string, data: UpdateMileageDto): Promise<MileageLog> => {
     try {
       return await request<MileageLog>(
@@ -106,7 +104,6 @@ export const vehicleApi = {
 
 export const rulesApi = {
 
-  // GET /api/maintenance-rules
   getAll: async (): Promise<MaintenanceRule[]> => {
     try {
       return await request<MaintenanceRule[]>(`${RULES_URL}/api/maintenance-rules`);
@@ -116,7 +113,6 @@ export const rulesApi = {
     }
   },
 
-  // POST /api/maintenance-rules
   create: async (data: CreateRuleDto): Promise<MaintenanceRule> => {
     try {
       return await request<MaintenanceRule>(`${RULES_URL}/api/maintenance-rules`, {
@@ -140,7 +136,6 @@ export const rulesApi = {
     }
   },
 
-  // POST /api/maintenance-rules/{id}/vehicle-types
   associateVehicleType: async (ruleId: string, data: AssociateVehicleTypeDto): Promise<void> => {
     try {
       await request<void>(
@@ -158,7 +153,6 @@ export const rulesApi = {
 
 export const maintenanceApi = {
 
-  // POST /api/maintenance/{plate}
   register: async (data: CreateMaintenanceDto): Promise<MaintenanceRecord> => {
     const plate = data.plate.trim().toUpperCase();
     const { plate: _, ...body } = data;
@@ -171,11 +165,12 @@ export const maintenanceApi = {
       if ((e as ApiError).status === 0) {
         const now = new Date().toISOString();
         const v = mockVehicles.find((v) => v.plate === plate);
+        const alert = mockAlerts.find((a) => a.id === data.alertId);
         const newRecord: MaintenanceRecord = {
           id: crypto.randomUUID(),
           plate,
-          alertId: data.alertId ?? null,
-          ruleId: data.ruleId ?? null,
+          alertId: data.alertId,
+          ruleId: alert?.ruleId ?? null,
           serviceType: data.serviceType,
           description: data.description ?? null,
           cost: data.cost ?? null,
@@ -185,10 +180,7 @@ export const maintenanceApi = {
           createdAt: now,
         };
         mockRecords.push(newRecord);
-        if (data.alertId) {
-          const alert = mockAlerts.find((a) => a.id === data.alertId);
-          if (alert) alert.status = 'RESOLVED';
-        }
+        if (alert) alert.status = 'RESOLVED';
         if (v && data.mileageAtService > v.currentMileage) {
           v.currentMileage = data.mileageAtService;
         }
@@ -205,7 +197,6 @@ export const isDemoMode = () => demoModeActive;
 
 export const alertsApi = {
 
-  // GET /api/alerts?status=
   getAll: async (status?: string): Promise<MaintenanceAlert[]> => {
     const url = status
       ? `${RULES_URL}/api/alerts?status=${status}`
@@ -222,7 +213,23 @@ export const alertsApi = {
     }
   },
 
-  // GET /api/alerts filtrado por vehicleId (client-side)
+  getByPlate: async (plate: string): Promise<MaintenanceAlert[]> => {
+    try {
+      return await request<MaintenanceAlert[]>(
+        `${RULES_URL}/api/alerts/vehicle/${plate.trim().toUpperCase()}`
+      );
+    } catch (e: unknown) {
+      if ((e as ApiError).status === 0) {
+        const v = mockVehicles.find((v) => v.plate === plate.trim().toUpperCase());
+        return v
+          ? mockAlerts.filter((a) => a.vehicleId === v.id &&
+              ['PENDING', 'WARNING', 'OVERDUE'].includes(a.status))
+          : [];
+      }
+      throw e;
+    }
+  },
+
   getByVehicleId: async (vehicleId: string): Promise<MaintenanceAlert[]> => {
     try {
       const all = await request<MaintenanceAlert[]>(`${RULES_URL}/api/alerts`);

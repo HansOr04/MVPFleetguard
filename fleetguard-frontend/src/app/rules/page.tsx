@@ -295,10 +295,7 @@ export default function RulesPage() {
                     value={formData.intervalKm || ''}
                     onChange={handleChange}
                     min={1}
-                    readOnly={nameIsValid}
-                    className={`w-full border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all text-on-surface outline-none ${
-                      nameIsValid ? 'bg-surface-container-high opacity-70 cursor-not-allowed' : 'bg-surface-container-highest'
-                    }`}
+                    className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all text-on-surface outline-none"
                     placeholder="Ej: 10000"
                     type="number"
                   />
@@ -314,10 +311,7 @@ export default function RulesPage() {
                     value={formData.warningThresholdKm || ''}
                     onChange={handleChange}
                     min={0}
-                    readOnly={nameIsValid}
-                    className={`w-full border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all text-on-surface outline-none ${
-                      nameIsValid ? 'bg-surface-container-high opacity-70 cursor-not-allowed' : 'bg-surface-container-highest'
-                    }`}
+                    className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all text-on-surface outline-none"
                     placeholder="Ej: 500"
                     type="number"
                   />

@@ -11,7 +11,6 @@ public interface RegisterMaintenanceUseCase {
     record RegisterMaintenanceCommand(
             String plate,
             UUID alertId,
-            UUID ruleId,
             String serviceType,
             String description,
             BigDecimal cost,

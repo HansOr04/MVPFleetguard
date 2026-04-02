@@ -1,8 +1,11 @@
 package com.fleetguard.rulesalerts.infrastructure.web.exception;
 
+import com.fleetguard.rulesalerts.domain.exception.AlertNotFoundException;
 import com.fleetguard.rulesalerts.domain.exception.DuplicateAssociationException;
 import com.fleetguard.rulesalerts.domain.exception.InvalidMaintenanceException;
 import com.fleetguard.rulesalerts.domain.exception.MaintenanceRuleNotFoundException;
+import com.fleetguard.rulesalerts.domain.exception.VehicleNotFoundException;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,7 +30,7 @@ public class GlobalExceptionHandler {
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fieldError -> fieldError.getDefaultMessage())
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .toList();
 
         return Map.of(
@@ -39,9 +42,27 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(MaintenanceRuleNotFoundException.class)
-    public Map<String, Object> handleMaintenanceRuleNotFound(
-            MaintenanceRuleNotFoundException ex) {
+    public Map<String, Object> handleMaintenanceRuleNotFound(MaintenanceRuleNotFoundException ex) {
+        return Map.of(
+                KEY_STATUS,  HttpStatus.NOT_FOUND.value(),
+                KEY_ERROR,   "Not found",
+                KEY_MESSAGE, ex.getMessage()
+        );
+    }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(AlertNotFoundException.class)
+    public Map<String, Object> handleAlertNotFound(AlertNotFoundException ex) {
+        return Map.of(
+                KEY_STATUS,  HttpStatus.NOT_FOUND.value(),
+                KEY_ERROR,   "Not found",
+                KEY_MESSAGE, ex.getMessage()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(VehicleNotFoundException.class)
+    public Map<String, Object> handleVehicleNotFound(VehicleNotFoundException ex) {
         return Map.of(
                 KEY_STATUS,  HttpStatus.NOT_FOUND.value(),
                 KEY_ERROR,   "Not found",
@@ -61,9 +82,7 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public Map<String, Object> handleDataIntegrityViolation(
-            DataIntegrityViolationException ex) {
-
+    public Map<String, Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         return Map.of(
                 KEY_STATUS,  HttpStatus.CONFLICT.value(),
                 KEY_ERROR,   "Conflict",
