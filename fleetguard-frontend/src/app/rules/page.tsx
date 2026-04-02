@@ -183,7 +183,7 @@ export default function RulesPage() {
             Reglas de Mantenimiento
           </h2>
           <p className="text-on-surface-variant text-lg max-w-2xl">
-            Define los intervalos de mantenimiento preventivo y asócialos a los tipos de vehículo de tu flota.
+            Selecciona el intervalo de mantenimiento preventivo y asócialo a los tipos de vehículo de tu flota.
           </p>
         </div>
 

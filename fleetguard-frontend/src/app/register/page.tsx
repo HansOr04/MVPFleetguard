@@ -87,7 +87,7 @@ export default function RegisterVehiclePage() {
             Registrar Nuevo Vehículo
           </h2>
           <p className="text-on-surface-variant text-lg max-w-2xl">
-            Complete la información técnica para integrar la nueva unidad al sistema central de monitoreo de flota.
+            Completa la información técnica para integrar la nueva unidad al sistema central de monitoreo de flota.
           </p>
         </div>
 
@@ -216,12 +216,6 @@ export default function RegisterVehiclePage() {
               </section>
 
               <div className="pt-8 flex items-center justify-end gap-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  className="px-8 py-3 rounded-lg text-on-primary-fixed-variant font-bold border-2 border-outline-variant/20 hover:bg-surface-container transition-all"
-                >
-                  Cancelar
-                </button>
                 <button
                   type="submit"
                   disabled={!isFormValid || loading}
