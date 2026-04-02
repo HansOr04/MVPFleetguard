@@ -146,31 +146,37 @@ function ServicesContent() {
                   </span>
                   <h3 className="text-xl font-bold text-primary">Identificación del Vehículo</h3>
                 </div>
-                <div className="flex gap-3 items-end">
-                  <div className="flex-1 space-y-2">
-                    <label className="block text-sm font-semibold text-on-surface-variant px-1">
-                      Placa <span className="text-error">*</span>
-                    </label>
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-on-surface-variant px-1">
+                    Placa <span className="text-error">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant/50 text-xl pointer-events-none">
+                      search
+                    </span>
                     <input
                       value={plate}
                       onChange={handlePlateChange}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearchAlerts(); } }}
                       required
                       placeholder="Ej: ABC-1234"
                       type="text"
-                      className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all font-mono tracking-widest text-lg outline-none uppercase"
+                      className="w-full bg-surface-container-highest border-none rounded-lg py-3 pl-11 pr-4 focus:ring-2 focus:ring-secondary/20 transition-all font-mono tracking-widest text-lg outline-none uppercase"
                     />
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleSearchAlerts}
-                    disabled={!plate.trim() || loadingAlerts}
-                    className="px-6 py-3 rounded-lg bg-secondary text-white font-bold shadow-sm hover:bg-on-secondary-container transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loadingAlerts
-                      ? <span className="material-symbols-outlined animate-spin text-sm">sync</span>
-                      : <span className="material-symbols-outlined text-sm">search</span>}
-                    Buscar
-                  </button>
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="button"
+                      onClick={handleSearchAlerts}
+                      disabled={!plate.trim() || loadingAlerts}
+                      className="px-6 py-2.5 rounded-lg bg-secondary text-white font-bold shadow-sm hover:bg-on-secondary-container transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loadingAlerts
+                        ? <span className="material-symbols-outlined animate-spin text-sm">sync</span>
+                        : null}
+                      Consultar alertas
+                    </button>
+                  </div>
                 </div>
               </section>
 
@@ -360,10 +366,12 @@ function ServicesContent() {
                 Guía de Registro
               </h4>
               <ul className="text-sm text-on-surface-variant leading-relaxed space-y-3">
-                <li>• Ingresa la <strong>placa</strong> del vehículo y presiona <strong>Buscar</strong> para ver sus alertas activas.</li>
-                <li>• Selecciona la <strong>alerta</strong> que este servicio resuelve.</li>
-                <li>• Completa la <strong>fecha</strong>, el <strong>kilometraje</strong> y los datos opcionales del servicio.</li>
-                <li>• Al guardar, la alerta quedará marcada como <strong>RESUELTA</strong> automáticamente.</li>
+                <li>• Escribe la <strong>placa exacta</strong> del vehículo en el campo de búsqueda y presiona <strong>Consultar alertas</strong> para ver las alertas de mantenimiento activas asociadas a esa unidad.</li>
+                <li>• Selecciona la <strong>alerta que este servicio resuelve</strong>. Cada alerta muestra el tipo de mantenimiento pendiente y el kilometraje límite para realizarlo.</li>
+                <li>• Ingresa la <strong>fecha exacta</strong> en que se realizó el servicio. Este dato es obligatorio para mantener la trazabilidad del historial.</li>
+                <li>• Registra el <strong>kilometraje actual</strong> del vehículo al momento del servicio. Este valor actualiza el odómetro de la flota.</li>
+                <li>• El <strong>proveedor, costo y descripción</strong> son opcionales pero recomendados para un historial completo y auditable.</li>
+                <li>• Al guardar, la alerta seleccionada quedará marcada automáticamente como <strong>RESUELTA</strong>.</li>
               </ul>
             </div>
 
