@@ -14,7 +14,9 @@ export default function UpdateMileagePage() {
   const [recordedBy, setRecordedBy] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [lastResult, setLastResult] = useState<MileageLog | null>(null);
+  const [lastPlate, setLastPlate] = useState('');
   const [generatedAlerts, setGeneratedAlerts] = useState<MaintenanceAlert[]>([]);
+  const [loadingAlerts, setLoadingAlerts] = useState(false);
 
   const isNegative = typeof newMileage === 'number' && newMileage < 0;
   const isZero = newMileage === 0;
@@ -26,27 +28,41 @@ export default function UpdateMileagePage() {
     !isZero &&
     recordedBy.trim().length > 0;
 
+  const previousMileage = lastResult ? lastResult.previousMileage : null;
+  const kmTraveled = lastResult ? lastResult.kmTraveled : null;
+
+  const statusConfig: Record<string, { label: string; color: string }> = {
+    PENDING: { label: 'Pendiente', color: 'text-yellow-700' },
+    WARNING: { label: 'Advertencia', color: 'text-orange-600' },
+    OVERDUE: { label: 'Vencida', color: 'text-error' },
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
     setSubmitting(true);
     setGeneratedAlerts([]);
+    const submittedPlate = plate.toUpperCase();
     try {
-      const result = await vehicleApi.updateMileage(plate.toUpperCase(), {
+      const result = await vehicleApi.updateMileage(submittedPlate, {
         mileageValue: newMileage as number,
         recordedBy: recordedBy,
       });
       setLastResult(result);
+      setLastPlate(submittedPlate);
       showToast('Odómetro actualizado correctamente', 'success');
       setNewMileage('');
       setRecordedBy('');
 
-      // Consultar alertas activas del vehículo tras actualizar km
+      setLoadingAlerts(true);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       try {
-        const alerts = await alertsApi.getByVehicleId(result.vehicleId);
+        const alerts = await alertsApi.getByPlate(submittedPlate);
         setGeneratedAlerts(alerts);
       } catch {
-        // silencioso — las alertas son informativas, no bloquean el flujo
+        // silencioso
+      } finally {
+        setLoadingAlerts(false);
       }
 
     } catch (error: unknown) {
@@ -113,8 +129,8 @@ export default function UpdateMileagePage() {
                     required
                     onWheel={(e) => e.currentTarget.blur()}
                     className={`w-full border-none rounded-lg py-3 pl-4 pr-4 focus:ring-2 transition-all outline-none text-xl font-bold ${isNegative
-                        ? 'bg-error-container/30 focus:ring-error/20'
-                        : 'bg-surface-container-highest focus:ring-secondary/20'
+                      ? 'bg-error-container/30 focus:ring-error/20'
+                      : 'bg-surface-container-highest focus:ring-secondary/20'
                       }`}
                   />
                 </div>
@@ -145,12 +161,12 @@ export default function UpdateMileagePage() {
                   disabled={!isFormValid || submitting}
                   className="px-10 py-3 rounded-lg bg-secondary text-white font-bold shadow-lg shadow-secondary/20 hover:bg-on-secondary-container transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? (
+                  {submitting || loadingAlerts ? (
                     <span className="material-symbols-outlined animate-spin text-sm">sync</span>
                   ) : (
                     <span className="material-symbols-outlined text-sm">speed</span>
                   )}
-                  Actualizar Odómetro
+                  {loadingAlerts ? 'Verificando alertas...' : 'Actualizar Odómetro'}
                 </button>
               </div>
             </form>
@@ -179,7 +195,14 @@ export default function UpdateMileagePage() {
                   </div>
                 )}
 
-                {generatedAlerts.length > 0 && (
+                {loadingAlerts && (
+                  <div className="bg-surface-container-low rounded-xl p-4 flex items-center gap-3">
+                    <span className="material-symbols-outlined animate-spin text-secondary text-sm">sync</span>
+                    <p className="text-sm text-on-surface-variant font-medium">Verificando alertas de mantenimiento...</p>
+                  </div>
+                )}
+
+                {!loadingAlerts && generatedAlerts.length > 0 && (
                   <div className="bg-error-container/20 border-l-4 border-error rounded-xl p-5 space-y-3">
                     <div className="flex items-center gap-2">
                       <span
@@ -190,8 +213,8 @@ export default function UpdateMileagePage() {
                       </span>
                       <p className="font-bold text-error text-sm">
                         {generatedAlerts.length === 1
-                          ? 'Se generó 1 alerta de mantenimiento'
-                          : `Se generaron ${generatedAlerts.length} alertas de mantenimiento`}
+                          ? '1 alerta de mantenimiento activa'
+                          : `${generatedAlerts.length} alertas de mantenimiento activas`}
                       </p>
                     </div>
                     <ul className="space-y-2">
@@ -201,19 +224,19 @@ export default function UpdateMileagePage() {
                           className="bg-white/60 rounded-lg px-4 py-3 flex flex-col gap-1"
                         >
                           <div className="flex justify-between items-center">
-                            <span className="text-xs font-bold text-error uppercase tracking-wider">
-                              {alert.status}
+                            <span className={`text-xs font-bold uppercase tracking-wider ${statusConfig[alert.status]?.color ?? 'text-on-surface-variant'}`}>
+                              {statusConfig[alert.status]?.label ?? alert.status}
                             </span>
                             <span className="text-xs text-on-surface-variant font-medium">
                               Límite: {alert.dueAtKm.toLocaleString()} km
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-mono text-on-surface-variant/70 truncate max-w-[180px]">
-                              ID: {alert.id}
-                            </p>
+                            <span className="text-xs font-medium text-on-surface-variant">
+                              {alert.ruleName ?? '—'}
+                            </span>
                             <Link
-                              href={`/services?plate=${lastResult.plate}`}
+                              href={`/services?plate=${lastPlate}`}
                               className="text-[11px] font-bold text-secondary hover:underline"
                             >
                               Registrar servicio →
@@ -225,7 +248,6 @@ export default function UpdateMileagePage() {
                   </div>
                 )}
 
-                {/* Resultado del registro */}
                 <div className="bg-surface-container-lowest rounded-xl shadow-sm p-8 border-l-4 border-secondary">
                   <div className="flex items-center gap-2 mb-6">
                     <span
@@ -241,13 +263,21 @@ export default function UpdateMileagePage() {
                       <span className="text-on-surface-variant font-medium">Placa</span>
                       <span className="font-bold text-primary font-mono">{lastResult.plate}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-on-surface-variant font-medium">Kilometraje registrado</span>
-                      <span className="font-bold text-primary">{lastResult.mileageValue.toLocaleString()} km</span>
+                    <div className="flex justify-between border-b border-slate-100 pb-4">
+                      <span className="text-on-surface-variant font-medium">Odómetro anterior</span>
+                      <span className="font-bold text-on-surface">{previousMileage!.toLocaleString()} km</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-on-surface-variant font-medium">Km registrados</span>
+                      <span className="font-bold text-on-surface">{lastResult!.mileageValue.toLocaleString()} km</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-on-surface-variant font-medium">Km recorridos</span>
+                      <span className="font-bold text-on-surface">{kmTraveled!.toLocaleString()} km</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-100 pt-4">
                       <span className="text-on-surface-variant font-medium">Odómetro actual</span>
-                      <span className="font-bold text-secondary">{lastResult.currentMileage.toLocaleString()} km</span>
+                      <span className="font-bold text-secondary text-base">{lastResult!.currentMileage.toLocaleString()} km</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant font-medium">Registrado por</span>

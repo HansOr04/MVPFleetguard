@@ -14,7 +14,9 @@ public class MileageResponse {
     private UUID mileageLogId;
     private UUID vehicleId;
     private String plate;
+    private long previousMileage;
     private long mileageValue;
+    private long kmTraveled;
     private long currentMileage;
     private String recordedBy;
     private LocalDateTime recordedAt;
