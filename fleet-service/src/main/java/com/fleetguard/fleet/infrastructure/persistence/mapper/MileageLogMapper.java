@@ -10,7 +10,9 @@ public class MileageLogMapper {
         return new MileageLogJpaEntity(
                 mileageLog.getId(),
                 mileageLog.getVehicleId(),
+                mileageLog.getPreviousMileage().getValue(),
                 mileageLog.getMileageValue().getValue(),
+                mileageLog.getKmTraveled(),
                 mileageLog.getRecordedAt(),
                 mileageLog.getRecordedBy()
         );
@@ -20,7 +22,9 @@ public class MileageLogMapper {
         return new MileageLog(
                 entity.getId(),
                 entity.getVehicleId(),
+                new Mileage(entity.getPreviousMileage()),
                 new Mileage(entity.getMileageValue()),
+                entity.getKmTraveled(),
                 entity.getRecordedAt(),
                 entity.getRecordedBy()
         );

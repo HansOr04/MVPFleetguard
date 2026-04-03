@@ -27,8 +27,14 @@ public class MileageLogJpaEntity {
     @Column(name = "vehicle_id", nullable = false)
     private UUID vehicleId;
 
+    @Column(name = "previous_mileage", nullable = false)
+    private long previousMileage;
+
     @Column(name = "mileage_value", nullable = false)
     private long mileageValue;
+
+    @Column(name = "km_traveled", nullable = false)
+    private long kmTraveled;
 
     @Column(name = "recorded_at", nullable = false)
     private LocalDateTime recordedAt;
@@ -36,6 +42,3 @@ public class MileageLogJpaEntity {
     @Column(name = "recorded_by", nullable = false)
     private String recordedBy;
 }
-
-
-

@@ -29,14 +29,12 @@ export default function UpdateMileagePage() {
     recordedBy.trim().length > 0;
 
   const previousMileage = lastResult ? lastResult.previousMileage : null;
-  const kmRecorridos = lastResult
-    ? lastResult.currentMileage - lastResult.previousMileage
-    : null;
+  const kmTraveled = lastResult ? lastResult.kmTraveled : null;
 
   const statusConfig: Record<string, { label: string; color: string }> = {
-    PENDING: { label: 'Pendiente',    color: 'text-yellow-700' },
-    WARNING: { label: 'Advertencia',  color: 'text-orange-600' },
-    OVERDUE: { label: 'Vencida',      color: 'text-error'      },
+    PENDING: { label: 'Pendiente', color: 'text-yellow-700' },
+    WARNING: { label: 'Advertencia', color: 'text-orange-600' },
+    OVERDUE: { label: 'Vencida', color: 'text-error' },
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,11 +128,10 @@ export default function UpdateMileagePage() {
                     min="1"
                     required
                     onWheel={(e) => e.currentTarget.blur()}
-                    className={`w-full border-none rounded-lg py-3 pl-4 pr-4 focus:ring-2 transition-all outline-none text-xl font-bold ${
-                      isNegative
-                        ? 'bg-error-container/30 focus:ring-error/20'
-                        : 'bg-surface-container-highest focus:ring-secondary/20'
-                    }`}
+                    className={`w-full border-none rounded-lg py-3 pl-4 pr-4 focus:ring-2 transition-all outline-none text-xl font-bold ${isNegative
+                      ? 'bg-error-container/30 focus:ring-error/20'
+                      : 'bg-surface-container-highest focus:ring-secondary/20'
+                      }`}
                   />
                 </div>
                 {isNegative && (
@@ -272,15 +269,15 @@ export default function UpdateMileagePage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant font-medium">Km registrados</span>
-                      <span className="font-bold text-on-surface">{lastResult.mileageValue.toLocaleString()} km</span>
+                      <span className="font-bold text-on-surface">{lastResult!.mileageValue.toLocaleString()} km</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant font-medium">Km recorridos</span>
-                      <span className="font-bold text-on-surface">{kmRecorridos!.toLocaleString()} km</span>
+                      <span className="font-bold text-on-surface">{kmTraveled!.toLocaleString()} km</span>
                     </div>
                     <div className="flex justify-between border-t border-slate-100 pt-4">
                       <span className="text-on-surface-variant font-medium">Odómetro actual</span>
-                      <span className="font-bold text-secondary text-base">{lastResult.currentMileage.toLocaleString()} km</span>
+                      <span className="font-bold text-secondary text-base">{lastResult!.currentMileage.toLocaleString()} km</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant font-medium">Registrado por</span>

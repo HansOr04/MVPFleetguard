@@ -20,6 +20,7 @@ public interface RegisterMileageUseCase {
             String plate,
             long previousMileage,
             long mileageValue,
+            long kmTraveled,
             long currentMileage,
             String recordedBy,
             LocalDateTime recordedAt,

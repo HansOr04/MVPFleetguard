@@ -24,6 +24,7 @@ public class MileageWebMapper {
                 response.plate(),
                 response.previousMileage(),
                 response.mileageValue(),
+                response.kmTraveled(),
                 response.currentMileage(),
                 response.recordedBy(),
                 response.recordedAt(),

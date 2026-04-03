@@ -36,11 +36,9 @@ public class RegisterMileageService implements RegisterMileageUseCase {
             throw new InvalidMileageException("Mileage value must be greater than zero");
         }
 
-        long previousMileage = vehicle.getCurrentMileage().getValue();
-
+        Mileage previousMileage = vehicle.getCurrentMileage();
         Mileage newMileage = new Mileage(command.mileageValue());
-
-        boolean excessiveIncrement = newMileage.isExcessiveIncrement(vehicle.getCurrentMileage());
+        boolean excessiveIncrement = newMileage.isExcessiveIncrement(previousMileage);
 
         vehicle.updateMileage(newMileage);
 
@@ -49,6 +47,7 @@ public class RegisterMileageService implements RegisterMileageUseCase {
                 vehicle.getId(),
                 vehicle.getVehicleType().getId(),
                 vehicle.getStatus().name(),
+                previousMileage,
                 newMileage,
                 recordedAt,
                 command.recordedBy(),
@@ -73,8 +72,9 @@ public class RegisterMileageService implements RegisterMileageUseCase {
                 savedLog.getId(),
                 vehicle.getId(),
                 vehicle.getPlate().getValue(),
-                previousMileage,
+                savedLog.getPreviousMileage().getValue(),
                 savedLog.getMileageValue().getValue(),
+                savedLog.getKmTraveled(),
                 vehicle.getCurrentMileage().getValue(),
                 savedLog.getRecordedBy(),
                 savedLog.getRecordedAt(),
