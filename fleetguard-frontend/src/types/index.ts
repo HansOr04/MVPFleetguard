@@ -23,6 +23,7 @@ export interface MileageLog {
   mileageLogId: string
   vehicleId: string
   plate: string
+  previousMileage: number
   mileageValue: number
   currentMileage: number
   recordedBy: string

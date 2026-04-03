@@ -18,6 +18,7 @@ public interface RegisterMileageUseCase {
             UUID mileageLogId,
             UUID vehicleId,
             String plate,
+            long previousMileage,
             long mileageValue,
             long currentMileage,
             String recordedBy,

@@ -32,15 +32,22 @@ public class AlertController {
                 : maintenanceAlertRepositoryPort.findAllActive();
 
         List<MaintenanceAlertResponse> response = alerts.stream()
-                .map(a -> MaintenanceAlertResponse.builder()
-                        .id(a.getId())
-                        .vehicleId(a.getVehicleId())
-                        .vehicleTypeId(a.getVehicleTypeId())
-                        .ruleId(a.getRuleId())
-                        .status(a.getStatus())
-                        .triggeredAt(a.getTriggeredAt())
-                        .dueAtKm(a.getDueAtKm())
-                        .build())
+                .map(a -> {
+                    String ruleName = maintenanceRuleQueryPort.findById(a.getRuleId())
+                            .map(MaintenanceRule::getName)
+                            .orElse("Regla desconocida");
+
+                    return MaintenanceAlertResponse.builder()
+                            .id(a.getId())
+                            .vehicleId(a.getVehicleId())
+                            .vehicleTypeId(a.getVehicleTypeId())
+                            .ruleId(a.getRuleId())
+                            .ruleName(ruleName)
+                            .status(a.getStatus())
+                            .triggeredAt(a.getTriggeredAt())
+                            .dueAtKm(a.getDueAtKm())
+                            .build();
+                })
                 .toList();
 
         return ResponseEntity.ok(response);
