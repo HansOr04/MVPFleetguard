@@ -25,8 +25,10 @@ public class MaintenanceAlertRepositoryAdapter implements MaintenanceAlertReposi
     }
 
     @Override
-    public boolean existsByVehicleIdAndRuleIdAndStatus(UUID vehicleId, UUID ruleId, String status) {
-        return maintenanceAlertJpaRepository.existsByVehicleIdAndRuleIdAndStatus(vehicleId, ruleId, status);
+    public Optional<MaintenanceAlert> findByVehicleIdAndRuleIdAndDueAtKm(UUID vehicleId, UUID ruleId, Long dueAtKm) {
+        return maintenanceAlertJpaRepository
+                .findByVehicleIdAndRuleIdAndDueAtKm(vehicleId, ruleId, dueAtKm)
+                .map(MaintenanceAlertPersistenceMapper::toDomain);
     }
 
     @Override
@@ -40,7 +42,7 @@ public class MaintenanceAlertRepositoryAdapter implements MaintenanceAlertReposi
     @Override
     public List<MaintenanceAlert> findActiveByVehicleId(UUID vehicleId) {
         return maintenanceAlertJpaRepository
-                .findByVehicleIdAndStatusIn(vehicleId, List.of("PENDING", "WARNING"))
+                .findByVehicleIdAndStatusIn(vehicleId, List.of("PENDING", "WARNING", "OVERDUE"))
                 .stream()
                 .map(MaintenanceAlertPersistenceMapper::toDomain)
                 .toList();
