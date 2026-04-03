@@ -10,7 +10,7 @@ public interface MaintenanceAlertRepositoryPort {
 
     MaintenanceAlert save(MaintenanceAlert alert);
 
-    boolean existsByVehicleIdAndRuleIdAndStatus(UUID vehicleId, UUID ruleId, String status);
+    Optional<MaintenanceAlert> findByVehicleIdAndRuleIdAndDueAtKm(UUID vehicleId, UUID ruleId, Long dueAtKm);
 
     List<MaintenanceAlert> findByStatus(String status);
 

@@ -4,11 +4,12 @@ import com.fleetguard.rulesalerts.infrastructure.persistence.entity.MaintenanceA
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface MaintenanceAlertJpaRepository extends JpaRepository<MaintenanceAlertJpaEntity, UUID> {
 
-    boolean existsByVehicleIdAndRuleIdAndStatus(UUID vehicleId, UUID ruleId, String status);
+    Optional<MaintenanceAlertJpaEntity> findByVehicleIdAndRuleIdAndDueAtKm(UUID vehicleId, UUID ruleId, Long dueAtKm);
 
     List<MaintenanceAlertJpaEntity> findByStatus(String status);
 
