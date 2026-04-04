@@ -37,6 +37,10 @@ public class RegisterMaintenanceService implements RegisterMaintenanceUseCase {
             throw new InvalidMaintenanceException("El kilometraje del servicio debe ser mayor a cero");
         }
 
+        if (command.recordedBy() == null || command.recordedBy().isBlank()) {
+            throw new InvalidMaintenanceException("El nombre de quien registra es obligatorio");
+        }
+
         MaintenanceAlert alert = maintenanceAlertRepositoryPort.findById(command.alertId())
                 .orElseThrow(() -> new AlertNotFoundException(command.alertId()));
 
@@ -57,7 +61,8 @@ public class RegisterMaintenanceService implements RegisterMaintenanceUseCase {
                 command.cost(),
                 command.provider(),
                 performedAt,
-                command.mileageAtService()
+                command.mileageAtService(),
+                command.recordedBy()
         );
 
         MaintenanceRecord saved = maintenanceRecordRepositoryPort.save(record);
@@ -87,6 +92,7 @@ public class RegisterMaintenanceService implements RegisterMaintenanceUseCase {
                 saved.getProvider(),
                 saved.getPerformedAt(),
                 saved.getMileageAtService(),
+                saved.getRecordedBy(),
                 LocalDateTime.now()
         );
     }

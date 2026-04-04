@@ -26,6 +26,7 @@ function ServicesContent() {
   const [alertSearchDone, setAlertSearchDone] = useState(false);
 
   const [formData, setFormData] = useState({
+    recordedBy: '',
     description: '',
     cost: '',
     provider: '',
@@ -38,6 +39,7 @@ function ServicesContent() {
   const isFormValid =
     plate.trim().length > 0 &&
     selectedAlert !== null &&
+    formData.recordedBy.trim().length > 0 &&
     formData.performedAt.trim().length > 0 &&
     formData.mileageAtService !== '' &&
     Number(formData.mileageAtService) > 0;
@@ -86,6 +88,7 @@ function ServicesContent() {
         provider: formData.provider.trim() || null,
         performedAt: `${formData.performedAt}T00:00:00`,
         mileageAtService: parseInt(formData.mileageAtService, 10),
+        recordedBy: formData.recordedBy.trim(),
       };
       await maintenanceApi.register(dto);
       showToast('Servicio registrado correctamente', 'success');
@@ -94,6 +97,7 @@ function ServicesContent() {
       setSelectedAlert(null);
       setAlertSearchDone(false);
       setFormData({
+        recordedBy: '',
         description: '',
         cost: '',
         provider: '',
@@ -251,6 +255,20 @@ function ServicesContent() {
                       <h3 className="text-xl font-bold text-primary">Datos del Servicio</h3>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-on-surface-variant px-1">
+                          Registrado por <span className="text-error">*</span>
+                        </label>
+                        <input
+                          name="recordedBy"
+                          value={formData.recordedBy}
+                          onChange={handleChange}
+                          placeholder="Nombre del técnico o responsable"
+                          type="text"
+                          required
+                          className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all outline-none"
+                        />
+                      </div>
                       <div className="space-y-2">
                         <label className="block text-sm font-semibold text-on-surface-variant px-1">
                           Fecha del Servicio <span className="text-error">*</span>

@@ -23,4 +23,5 @@ public class MaintenanceRecord {
     private String provider;
     private LocalDateTime performedAt;
     private long mileageAtService;
+    private String recordedBy;
 }

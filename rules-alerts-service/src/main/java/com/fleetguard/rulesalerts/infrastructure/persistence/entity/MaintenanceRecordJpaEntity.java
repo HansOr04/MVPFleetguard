@@ -50,6 +50,9 @@ public class MaintenanceRecordJpaEntity {
     @Column(name = "mileage_at_service", nullable = false)
     private long mileageAtService;
 
+    @Column(name = "recorded_by", nullable = false, length = 150)
+    private String recordedBy;
+
     protected MaintenanceRecordJpaEntity() {
     }
 }
