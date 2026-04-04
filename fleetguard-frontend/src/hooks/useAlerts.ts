@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { alertsApi } from '@/lib/api';
+import { alertService } from '@/services/alert.service';
 import { MaintenanceAlert } from '@/types';
 
 export function useAlerts(initialFilter?: string) {
@@ -11,7 +11,7 @@ export function useAlerts(initialFilter?: string) {
   const fetchAlerts = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await alertsApi.getAll(filter === 'TODOS' ? undefined : filter);
+      const data = await alertService.getAll(filter === 'TODOS' ? undefined : filter);
       setAlerts(data);
       setError(null);
     } catch (err: unknown) {

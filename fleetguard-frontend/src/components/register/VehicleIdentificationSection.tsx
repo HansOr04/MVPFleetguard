@@ -1,6 +1,5 @@
 import React from 'react';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { CreateVehicleDto } from '@/types';
 
 interface VehicleIdentificationSectionProps {
   plate: string;

@@ -25,7 +25,6 @@ interface UseMileageFormReturn {
   setNewMileage: (value: number | '') => void;
   setRecordedBy: (value: string) => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
-  showToast: (message: string, type: 'success' | 'error') => void;
 }
 
 export function useMileageForm(
@@ -72,6 +71,7 @@ export function useMileageForm(
         const alerts = await alertService.getByPlate(submittedPlate);
         setGeneratedAlerts(alerts);
       } catch {
+        // silencioso
       } finally {
         setLoadingAlerts(false);
       }
@@ -106,6 +106,5 @@ export function useMileageForm(
     setNewMileage,
     setRecordedBy,
     handleSubmit,
-    showToast,
   };
 }

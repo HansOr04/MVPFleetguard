@@ -131,6 +131,7 @@ export const mockRecords: MaintenanceRecord[] = [
     provider: 'Taller Autorizado Toyota',
     performedAt: '2024-09-05T00:00:00Z',
     mileageAtService: 40100,
+    recordedBy: 'Juan Pérez',
     createdAt: '2024-09-05T00:00:00Z',
   },
 ];

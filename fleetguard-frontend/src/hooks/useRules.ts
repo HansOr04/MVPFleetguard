@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { rulesApi } from '@/lib/api';
+import { ruleService } from '@/services/rule.service';
 import { MaintenanceRule } from '@/types';
 
 export function useRules() {
@@ -10,7 +10,7 @@ export function useRules() {
   const fetchRules = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await rulesApi.getAll();
+      const data = await ruleService.getAll();
       setRules(data);
       setError(null);
     } catch (err: unknown) {
