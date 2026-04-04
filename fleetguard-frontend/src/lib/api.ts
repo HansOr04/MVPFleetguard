@@ -82,12 +82,15 @@ export const vehicleApi = {
     } catch (e: unknown) {
       if ((e as ApiError).status === 0) {
         const v = mockVehicles.find((v) => v.plate === plate);
+        const previous = v?.currentMileage ?? 0;
         if (v) v.currentMileage = data.mileageValue;
         return {
           mileageLogId: crypto.randomUUID(),
           vehicleId: v?.id ?? '',
           plate,
+          previousMileage: previous,
           mileageValue: data.mileageValue,
+          kmTraveled: data.mileageValue - previous,
           currentMileage: data.mileageValue,
           recordedBy: data.recordedBy,
           recordedAt: new Date().toISOString(),
@@ -177,6 +180,7 @@ export const maintenanceApi = {
           provider: data.provider ?? null,
           performedAt: data.performedAt ?? now,
           mileageAtService: data.mileageAtService,
+          recordedBy: data.recordedBy,
           createdAt: now,
         };
         mockRecords.push(newRecord);

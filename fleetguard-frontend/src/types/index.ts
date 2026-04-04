@@ -1,5 +1,3 @@
-// ─── Modelos (respuestas del backend) ───────────────────────────────────────
-
 export interface Vehicle {
   id: string
   plate: string
@@ -73,6 +71,7 @@ export interface MaintenanceRecord {
   provider: string | null
   performedAt: string
   mileageAtService: number
+  recordedBy: string
   createdAt: string
 }
 
@@ -82,7 +81,7 @@ export interface ApiError {
   errors?: string[]
 }
 
-// ─── DTOs (lo que se envía al backend) ──────────────────────────────────────
+// ─── DTOs  ──────────────────────────────────────
 
 export interface CreateVehicleDto {
   plate: string
@@ -119,4 +118,5 @@ export interface CreateMaintenanceDto {
   provider: string | null
   performedAt: string | null
   mileageAtService: number
+  recordedBy: string
 }

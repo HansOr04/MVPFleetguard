@@ -16,7 +16,8 @@ public interface RegisterMaintenanceUseCase {
             BigDecimal cost,
             String provider,
             LocalDateTime performedAt,
-            long mileageAtService
+            long mileageAtService,
+            String recordedBy
     ) {
     }
 
@@ -32,6 +33,7 @@ public interface RegisterMaintenanceUseCase {
             String provider,
             LocalDateTime performedAt,
             long mileageAtService,
+            String recordedBy,
             LocalDateTime createdAt
     ) {
     }

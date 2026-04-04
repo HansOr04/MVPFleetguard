@@ -38,4 +38,7 @@ public class RegisterMaintenanceRequest {
     @NotNull(message = "El kilometraje del servicio es obligatorio.")
     @Positive(message = "El kilometraje del servicio debe ser mayor a cero.")
     private Long mileageAtService;
+
+    @NotBlank(message = "El nombre de quien registra es obligatorio.")
+    private String recordedBy;
 }

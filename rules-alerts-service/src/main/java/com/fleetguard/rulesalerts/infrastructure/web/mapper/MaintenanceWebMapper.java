@@ -18,7 +18,8 @@ public class MaintenanceWebMapper {
                 request.getCost(),
                 request.getProvider(),
                 request.getPerformedAt(),
-                request.getMileageAtService()
+                request.getMileageAtService(),
+                request.getRecordedBy()
         );
     }
 

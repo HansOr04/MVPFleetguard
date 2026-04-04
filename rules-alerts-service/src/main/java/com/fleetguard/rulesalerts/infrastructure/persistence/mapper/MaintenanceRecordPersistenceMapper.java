@@ -19,7 +19,8 @@ public class MaintenanceRecordPersistenceMapper {
                 record.getCost(),
                 record.getProvider(),
                 record.getPerformedAt(),
-                record.getMileageAtService()
+                record.getMileageAtService(),
+                record.getRecordedBy()
         );
     }
 
@@ -34,7 +35,8 @@ public class MaintenanceRecordPersistenceMapper {
                 entity.getCost(),
                 entity.getProvider(),
                 entity.getPerformedAt(),
-                entity.getMileageAtService()
+                entity.getMileageAtService(),
+                entity.getRecordedBy()
         );
     }
 }
