@@ -1,90 +1,33 @@
 'use client'
 
-import React, { useState } from 'react';
-import { vehicleApi, alertsApi } from '@/lib/api';
+import React from 'react';
 import { useToast } from '@/hooks/useToast';
+import { useMileageForm } from '@/hooks/useMileageForm';
 import { Toast } from '@/components/ui/Toast';
-import { MileageLog, MaintenanceAlert } from '@/types';
-import Link from 'next/link';
+import { MileageForm } from '@/components/mileage/MileageForm';
+import { MileageResultPanel } from '@/components/mileage/MileageResultPanel';
+import { InfoCard } from '@/components/feedback/InfoCard';
 
 export default function UpdateMileagePage() {
   const { toast, showToast } = useToast();
-  const [plate, setPlate] = useState('');
-  const [newMileage, setNewMileage] = useState<number | ''>('');
-  const [recordedBy, setRecordedBy] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [lastResult, setLastResult] = useState<MileageLog | null>(null);
-  const [lastPlate, setLastPlate] = useState('');
-  const [generatedAlerts, setGeneratedAlerts] = useState<MaintenanceAlert[]>([]);
-  const [loadingAlerts, setLoadingAlerts] = useState(false);
-
-  const isNegative = typeof newMileage === 'number' && newMileage < 0;
-  const isZero = newMileage === 0;
-  const isExcessive = lastResult !== null && lastResult.excessiveIncrement;
-  const isFormValid =
-    plate.length > 0 &&
-    newMileage !== '' &&
-    !isNegative &&
-    !isZero &&
-    recordedBy.trim().length > 0;
-
-  const previousMileage = lastResult ? lastResult.previousMileage : null;
-  const kmTraveled = lastResult ? lastResult.kmTraveled : null;
-
-  const statusConfig: Record<string, { label: string; color: string }> = {
-    PENDING: { label: 'Pendiente', color: 'text-yellow-700' },
-    WARNING: { label: 'Advertencia', color: 'text-orange-600' },
-    OVERDUE: { label: 'Vencida', color: 'text-error' },
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid) return;
-    setSubmitting(true);
-    setGeneratedAlerts([]);
-    const submittedPlate = plate.toUpperCase();
-    try {
-      const result = await vehicleApi.updateMileage(submittedPlate, {
-        mileageValue: newMileage as number,
-        recordedBy: recordedBy,
-      });
-      setLastResult(result);
-      setLastPlate(submittedPlate);
-      showToast('Odómetro actualizado correctamente', 'success');
-      setNewMileage('');
-      setRecordedBy('');
-
-      setLoadingAlerts(true);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      try {
-        const alerts = await alertsApi.getByPlate(submittedPlate);
-        setGeneratedAlerts(alerts);
-      } catch {
-        // silencioso
-      } finally {
-        setLoadingAlerts(false);
-      }
-
-    } catch (error: unknown) {
-      const e = error as { status?: number; message?: string; errors?: string[] };
-      if (e.status === 0) {
-        showToast('Sin conexión con el servidor', 'error');
-      } else if (e.status === 404) {
-        showToast('Vehículo no encontrado. Verifica la placa.', 'error');
-      } else if (e.status === 400 && e.errors) {
-        showToast(`Error de validación: ${e.errors.join(', ')}`, 'error');
-      } else {
-        showToast(e.message || 'Error al actualizar el kilometraje', 'error');
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const {
+    formState,
+    submitting,
+    loadingAlerts,
+    lastResult,
+    lastPlate,
+    generatedAlerts,
+    isFormValid,
+    isNegative,
+    setPlate,
+    setNewMileage,
+    setRecordedBy,
+    handleSubmit,
+  } = useMileageForm(showToast);
 
   return (
     <div className="min-h-screen">
       <div className="p-12 pt-24 max-w-5xl mx-auto">
-
         <div className="mb-12">
           <h2 className="text-4xl font-extrabold tracking-tight text-primary mb-2">
             Actualizar Kilometraje
@@ -95,236 +38,41 @@ export default function UpdateMileagePage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-
-          <div className="bg-surface-container-lowest rounded-xl shadow-sm p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-on-surface-variant px-1">
-                  Placa del Vehículo <span className="text-error">*</span>
-                </label>
-                <input
-                  value={plate}
-                  onChange={(e) => setPlate(e.target.value)}
-                  placeholder="Ej: ABC-1234"
-                  type="text"
-                  required
-                  className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all font-mono tracking-widest text-lg outline-none uppercase"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-on-surface-variant px-1">
-                  Nuevo Kilometraje <span className="text-error">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    value={newMileage}
-                    onChange={(e) =>
-                      setNewMileage(e.target.value === '' ? '' : Number(e.target.value))
-                    }
-                    placeholder="0"
-                    type="number"
-                    min="1"
-                    required
-                    onWheel={(e) => e.currentTarget.blur()}
-                    className={`w-full border-none rounded-lg py-3 pl-4 pr-4 focus:ring-2 transition-all outline-none text-xl font-bold ${isNegative
-                      ? 'bg-error-container/30 focus:ring-error/20'
-                      : 'bg-surface-container-highest focus:ring-secondary/20'
-                      }`}
-                  />
-                </div>
-                {isNegative && (
-                  <p className="text-[11px] text-error font-medium px-1">
-                    El kilometraje no puede ser negativo.
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-on-surface-variant px-1">
-                  Registrado por <span className="text-error">*</span>
-                </label>
-                <input
-                  value={recordedBy}
-                  onChange={(e) => setRecordedBy(e.target.value)}
-                  placeholder="Nombre del conductor o técnico"
-                  type="text"
-                  required
-                  className="w-full bg-surface-container-highest border-none rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary/20 transition-all outline-none"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end border-t border-slate-100">
-                <button
-                  type="submit"
-                  disabled={!isFormValid || submitting}
-                  className="px-10 py-3 rounded-lg bg-secondary text-white font-bold shadow-lg shadow-secondary/20 hover:bg-on-secondary-container transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {submitting || loadingAlerts ? (
-                    <span className="material-symbols-outlined animate-spin text-sm">sync</span>
-                  ) : (
-                    <span className="material-symbols-outlined text-sm">speed</span>
-                  )}
-                  {loadingAlerts ? 'Verificando alertas...' : 'Actualizar Odómetro'}
-                </button>
-              </div>
-            </form>
-          </div>
+          <MileageForm
+            plate={formState.plate}
+            newMileage={formState.newMileage}
+            recordedBy={formState.recordedBy}
+            isNegative={isNegative}
+            isFormValid={isFormValid}
+            submitting={submitting}
+            loadingAlerts={loadingAlerts}
+            onPlateChange={setPlate}
+            onMileageChange={setNewMileage}
+            onRecordedByChange={setRecordedBy}
+            onSubmit={handleSubmit}
+          />
 
           <div className="space-y-4">
-
             {lastResult ? (
-              <>
-                {isExcessive && (
-                  <div className="bg-[#FEF9C3] border-l-4 border-[#D69E2E] p-5 rounded-xl flex items-start gap-4">
-                    <span
-                      className="material-symbols-outlined text-[#D69E2E] mt-0.5"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      warning
-                    </span>
-                    <div>
-                      <p className="font-bold text-[#856404] text-sm">
-                        Incremento inusualmente alto registrado
-                      </p>
-                      <p className="text-[#856404] text-xs mt-1 opacity-80">
-                        El sistema detectó un incremento elevado. El registro fue guardado. Se recomienda verificar el odómetro físico del vehículo.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {loadingAlerts && (
-                  <div className="bg-surface-container-low rounded-xl p-4 flex items-center gap-3">
-                    <span className="material-symbols-outlined animate-spin text-secondary text-sm">sync</span>
-                    <p className="text-sm text-on-surface-variant font-medium">Verificando alertas de mantenimiento...</p>
-                  </div>
-                )}
-
-                {!loadingAlerts && generatedAlerts.length > 0 && (
-                  <div className="bg-error-container/20 border-l-4 border-error rounded-xl p-5 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="material-symbols-outlined text-error"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        notification_important
-                      </span>
-                      <p className="font-bold text-error text-sm">
-                        {generatedAlerts.length === 1
-                          ? '1 alerta de mantenimiento activa'
-                          : `${generatedAlerts.length} alertas de mantenimiento activas`}
-                      </p>
-                    </div>
-                    <ul className="space-y-2">
-                      {generatedAlerts.map((alert) => (
-                        <li
-                          key={alert.id}
-                          className="bg-white/60 rounded-lg px-4 py-3 flex flex-col gap-1"
-                        >
-                          <div className="flex justify-between items-center">
-                            <span className={`text-xs font-bold uppercase tracking-wider ${statusConfig[alert.status]?.color ?? 'text-on-surface-variant'}`}>
-                              {statusConfig[alert.status]?.label ?? alert.status}
-                            </span>
-                            <span className="text-xs text-on-surface-variant font-medium">
-                              Límite: {alert.dueAtKm.toLocaleString()} km
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-on-surface-variant">
-                              {alert.ruleName ?? '—'}
-                            </span>
-                            <Link
-                              href={`/services?plate=${lastPlate}`}
-                              className="text-[11px] font-bold text-secondary hover:underline"
-                            >
-                              Registrar servicio →
-                            </Link>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="bg-surface-container-lowest rounded-xl shadow-sm p-8 border-l-4 border-secondary">
-                  <div className="flex items-center gap-2 mb-6">
-                    <span
-                      className="material-symbols-outlined text-secondary"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      check_circle
-                    </span>
-                    <h3 className="text-lg font-bold text-primary">Registro Confirmado</h3>
-                  </div>
-                  <div className="space-y-4 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-on-surface-variant font-medium">Placa</span>
-                      <span className="font-bold text-primary font-mono">{lastResult.plate}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-100 pb-4">
-                      <span className="text-on-surface-variant font-medium">Odómetro anterior</span>
-                      <span className="font-bold text-on-surface">{previousMileage!.toLocaleString()} km</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-on-surface-variant font-medium">Km registrados</span>
-                      <span className="font-bold text-on-surface">{lastResult!.mileageValue.toLocaleString()} km</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-on-surface-variant font-medium">Km recorridos</span>
-                      <span className="font-bold text-on-surface">{kmTraveled!.toLocaleString()} km</span>
-                    </div>
-                    <div className="flex justify-between border-t border-slate-100 pt-4">
-                      <span className="text-on-surface-variant font-medium">Odómetro actual</span>
-                      <span className="font-bold text-secondary text-base">{lastResult!.currentMileage.toLocaleString()} km</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-on-surface-variant font-medium">Registrado por</span>
-                      <span className="font-bold text-on-surface">{lastResult.recordedBy}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-on-surface-variant font-medium">Fecha</span>
-                      <span className="font-medium text-on-surface">
-                        {new Date(lastResult.recordedAt).toLocaleString('es-CO')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </>
+              <MileageResultPanel
+                lastResult={lastResult}
+                lastPlate={lastPlate}
+                generatedAlerts={generatedAlerts}
+                loadingAlerts={loadingAlerts}
+              />
             ) : (
-              <div className="bg-surface-container-low rounded-xl p-6 border-l-4 border-secondary">
-                <h4 className="font-bold text-primary mb-3 flex items-center gap-2">
-                  <span
-                    className="material-symbols-outlined text-secondary"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    info
-                  </span>
-                  Guía de Registro
-                </h4>
-                <ul className="text-sm text-on-surface-variant leading-relaxed space-y-2">
+              <InfoCard icon="info" title="Guía de Registro">
+                <ul className="space-y-2">
                   <li>• Ingresa la <strong>placa exacta</strong> tal como está registrada en el sistema.</li>
                   <li>• El kilometraje debe ser <strong>mayor a cero</strong>.</li>
                   <li>• El sistema avisará si el incremento es inusualmente alto una vez guardado.</li>
                 </ul>
-              </div>
+              </InfoCard>
             )}
 
-            <div className="bg-primary text-white rounded-xl p-8 shadow-xl relative overflow-hidden">
-              <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-secondary/10 rounded-full blur-3xl" />
-              <div className="relative z-10">
-                <span
-                  className="material-symbols-outlined text-4xl text-secondary-container mb-4 block"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  speed
-                </span>
-                <p className="text-sm font-medium opacity-80 leading-relaxed">
-                  Mantener el odómetro actualizado garantiza que las alertas de mantenimiento preventivo se generen en el momento correcto.
-                </p>
-              </div>
-            </div>
+            <InfoCard icon="speed" title="" variant="dark">
+              Mantener el odómetro actualizado garantiza que las alertas de mantenimiento preventivo se generen en el momento correcto.
+            </InfoCard>
           </div>
         </div>
       </div>
