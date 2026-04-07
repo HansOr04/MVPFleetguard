@@ -8,7 +8,7 @@ public class Plate {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException("Plate cannot be null or empty");
         }
-        this.value = value;
+        this.value = value.toUpperCase();
     }
 
     public String getValue() {
