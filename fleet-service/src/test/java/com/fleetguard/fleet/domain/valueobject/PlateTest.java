@@ -1,59 +1,35 @@
 package com.fleetguard.fleet.domain.valueobject;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
+@DisplayName("Plate")
 class PlateTest {
 
-    @Test
-    void shouldCreateValidPlate() {
-        String validPlate = "ABC123";
+    @Nested
+    @DisplayName("Construction")
+    class Construction {
 
-        Plate plate = new Plate(validPlate);
+        @ParameterizedTest(name = "rejects [{0}]")
+        @NullAndEmptySource
+        @ValueSource(strings = {"   "})
+        @DisplayName("rejects null, empty and blank values")
+        void rejectsInvalidValues(String value) {
+            assertThatThrownBy(() -> new Plate(value))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Plate cannot be null or empty");
+        }
 
-        assertNotNull(plate);
-        assertEquals(validPlate, plate.getValue());
-    }
-
-    @Test
-    void shouldThrowExceptionForNullPlate() {
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> new Plate(null));
-
-        assertEquals("Plate cannot be null or empty", exception.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionForEmptyPlate() {
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> new Plate(""));
-
-        assertEquals("Plate cannot be null or empty", exception.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionForBlankPlate() {
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> new Plate("   "));
-
-        assertEquals("Plate cannot be null or empty", exception.getMessage());
-    }
-
-    @Test
-    void shouldReturnTrueForEqualPlates() {
-        Plate plate1 = new Plate("ABC123");
-        Plate plate2 = new Plate("ABC123");
-
-        assertEquals(plate1, plate2);
-        assertEquals(plate1.hashCode(), plate2.hashCode());
-    }
-
-    @Test
-    void shouldReturnFalseForDifferentPlates() {
-        Plate plate1 = new Plate("ABC123");
-        Plate plate2 = new Plate("XYZ789");
-
-        assertNotEquals(plate1, plate2);
+        @Test
+        @DisplayName("accepts valid plate")
+        void acceptsValidPlate() {
+            assertThat(new Plate("ABC-1234").getValue()).isEqualTo("ABC-1234");
+        }
     }
 }

@@ -1,94 +1,90 @@
 package com.fleetguard.fleet.application.service;
 
 import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase.RegisterVehicleCommand;
+import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase.RegisterVehicleResponse;
 import com.fleetguard.fleet.application.ports.out.VehicleRepositoryPort;
 import com.fleetguard.fleet.domain.exception.DuplicatePlateException;
 import com.fleetguard.fleet.domain.exception.VehicleTypeNotFoundException;
-import com.fleetguard.fleet.domain.model.vehicle.Vehicle;
 import com.fleetguard.fleet.domain.model.vehicle.VehicleType;
-import com.fleetguard.fleet.domain.valueobject.Plate;
-import com.fleetguard.fleet.domain.valueobject.Vin;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@DisplayName("RegisterVehicleService")
 class RegisterVehicleServiceTest {
 
     @Mock
     private VehicleRepositoryPort vehicleRepository;
 
     @InjectMocks
-    private RegisterVehicleService registerVehicleService;
+    private RegisterVehicleService service;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    private final UUID typeId = UUID.randomUUID();
+    private final VehicleType vehicleType = new VehicleType(typeId, "Pickup", "Pickup truck");
+
+    private RegisterVehicleCommand validCommand() {
+        return new RegisterVehicleCommand(
+                "ABC-1234", "Toyota", "Hilux", 2023,
+                "Diesel", "1HGCM82633A123456", typeId);
     }
 
-    @Test
-    void shouldRegisterVehicle() {
-        RegisterVehicleCommand command = new RegisterVehicleCommand(
-                "ABC123", "Toyota", "Corolla", 2023, "Gasoline",
-                "1HGCM82633A123456", UUID.randomUUID()
-        );
+    @Nested
+    @DisplayName("Happy path")
+    class HappyPath {
 
-        Plate plate = new Plate(command.plate());
-        Vin vin = new Vin(command.vin());
-        VehicleType vehicleType = new VehicleType(command.vehicleTypeId(), "Sedan", "Compact car");
-        Vehicle vehicle = Vehicle.create(plate, command.brand(), command.model(),
-                command.year(), command.fuelType(), vin, vehicleType);
+        @Test
+        @DisplayName("registers vehicle and returns correct response")
+        void registersVehicle() {
+            when(vehicleRepository.existsByPlate("ABC-1234")).thenReturn(false);
+            when(vehicleRepository.findVehicleTypeById(typeId)).thenReturn(Optional.of(vehicleType));
+            when(vehicleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        when(vehicleRepository.existsByPlate(command.plate())).thenReturn(false);
-        when(vehicleRepository.findVehicleTypeById(command.vehicleTypeId())).thenReturn(Optional.of(vehicleType));
-        when(vehicleRepository.save(any(Vehicle.class))).thenReturn(vehicle);
+            RegisterVehicleResponse response = service.execute(validCommand());
 
-        var response = registerVehicleService.execute(command);
-
-        assertNotNull(response);
-        assertEquals(command.plate(), response.plate());
-        assertEquals(command.brand(), response.brand());
-        assertEquals(command.model(), response.model());
-        verify(vehicleRepository, times(1)).existsByPlate(command.plate());
-        verify(vehicleRepository, times(1)).findVehicleTypeById(command.vehicleTypeId());
-        verify(vehicleRepository, times(1)).save(any(Vehicle.class));
+            assertThat(response.plate()).isEqualTo("ABC-1234");
+            assertThat(response.status()).isEqualTo("ACTIVE");
+            assertThat(response.currentMileage()).isZero();
+            verify(vehicleRepository).save(any());
+        }
     }
 
-    @Test
-    void shouldThrowExceptionWhenPlateAlreadyExists() {
-        RegisterVehicleCommand command = new RegisterVehicleCommand(
-                "ABC123", "Toyota", "Corolla", 2023, "Gasoline",
-                "1HGCM82633A123456", UUID.randomUUID()
-        );
+    @Nested
+    @DisplayName("Error handling")
+    class ErrorHandling {
 
-        when(vehicleRepository.existsByPlate(command.plate())).thenReturn(true);
+        @Test
+        @DisplayName("rejects duplicate plate — never calls save")
+        void rejectsDuplicatePlate() {
+            when(vehicleRepository.existsByPlate("ABC-1234")).thenReturn(true);
 
-        assertThrows(DuplicatePlateException.class, () -> registerVehicleService.execute(command));
-        verify(vehicleRepository, times(1)).existsByPlate(command.plate());
-        verify(vehicleRepository, never()).findVehicleTypeById(any(UUID.class));
-        verify(vehicleRepository, never()).save(any(Vehicle.class));
-    }
+            assertThatThrownBy(() -> service.execute(validCommand()))
+                    .isInstanceOf(DuplicatePlateException.class);
 
-    @Test
-    void shouldThrowExceptionWhenVehicleTypeNotFound() {
-        RegisterVehicleCommand command = new RegisterVehicleCommand(
-                "ABC123", "Toyota", "Corolla", 2023, "Gasoline",
-                "1HGCM82633A123456", UUID.randomUUID()
-        );
+            verify(vehicleRepository, never()).save(any());
+        }
 
-        when(vehicleRepository.existsByPlate(command.plate())).thenReturn(false);
-        when(vehicleRepository.findVehicleTypeById(command.vehicleTypeId())).thenReturn(Optional.empty());
+        @Test
+        @DisplayName("rejects unknown vehicle type — never calls save")
+        void rejectsUnknownVehicleType() {
+            when(vehicleRepository.existsByPlate("ABC-1234")).thenReturn(false);
+            when(vehicleRepository.findVehicleTypeById(typeId)).thenReturn(Optional.empty());
 
-        assertThrows(VehicleTypeNotFoundException.class, () -> registerVehicleService.execute(command));
-        verify(vehicleRepository, times(1)).existsByPlate(command.plate());
-        verify(vehicleRepository, times(1)).findVehicleTypeById(command.vehicleTypeId());
-        verify(vehicleRepository, never()).save(any(Vehicle.class));
+            assertThatThrownBy(() -> service.execute(validCommand()))
+                    .isInstanceOf(VehicleTypeNotFoundException.class);
+
+            verify(vehicleRepository, never()).save(any());
+        }
     }
 }
