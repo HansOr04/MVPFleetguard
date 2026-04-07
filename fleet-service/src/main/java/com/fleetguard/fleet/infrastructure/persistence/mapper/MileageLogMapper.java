@@ -19,7 +19,7 @@ public class MileageLogMapper {
     }
 
     public static MileageLog toDomain(MileageLogJpaEntity entity) {
-        return new MileageLog(
+        return MileageLog.reconstitute(
                 entity.getId(),
                 entity.getVehicleId(),
                 new Mileage(entity.getPreviousMileage()),

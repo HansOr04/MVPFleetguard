@@ -25,18 +25,6 @@ public class MileageLog extends AggregateRoot {
     private String recordedBy;
     private boolean excessiveIncrement;
 
-    public MileageLog(UUID id, UUID vehicleId, Mileage previousMileage,
-                      Mileage mileageValue, long kmTraveled,
-                      LocalDateTime recordedAt, String recordedBy) {
-        this.id = id;
-        this.vehicleId = vehicleId;
-        this.previousMileage = previousMileage;
-        this.mileageValue = mileageValue;
-        this.kmTraveled = kmTraveled;
-        this.recordedAt = recordedAt;
-        this.recordedBy = recordedBy;
-    }
-
     public static MileageLog create(UUID vehicleId, UUID vehicleTypeId, String vehicleStatus,
                                     Mileage previousMileage, Mileage mileageValue,
                                     LocalDateTime recordedAt, String recordedBy,
@@ -65,6 +53,21 @@ public class MileageLog extends AggregateRoot {
                 recordedAt
         ));
 
+        return log;
+    }
+
+    public static MileageLog reconstitute(UUID id, UUID vehicleId,
+                                          Mileage previousMileage, Mileage mileageValue,
+                                          long kmTraveled, LocalDateTime recordedAt,
+                                          String recordedBy) {
+        MileageLog log = new MileageLog();
+        log.id = id;
+        log.vehicleId = vehicleId;
+        log.previousMileage = previousMileage;
+        log.mileageValue = mileageValue;
+        log.kmTraveled = kmTraveled;
+        log.recordedAt = recordedAt;
+        log.recordedBy = recordedBy;
         return log;
     }
 }
