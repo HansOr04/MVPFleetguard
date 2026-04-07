@@ -17,7 +17,7 @@ public class Mileage {
         return new Mileage(0);
     }
 
-    public void validateNotLessThan(Mileage newMileage) {
+    public void assertNewMileageIsNotLower(Mileage newMileage) {
         if (newMileage.value < this.value) {
             throw new InvalidMileageException(
                     "New mileage " + newMileage.value +

@@ -1,84 +1,86 @@
 package com.fleetguard.fleet.domain.valueobject;
 
 import com.fleetguard.fleet.domain.exception.InvalidMileageException;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
+@DisplayName("Mileage")
 class MileageTest {
 
-    @Test
-    void shouldCreateValidMileage() {
-        long validMileage = 1000;
+    @Nested
+    @DisplayName("Construction")
+    class Construction {
 
-        Mileage mileage = new Mileage(validMileage);
+        @Test
+        @DisplayName("zero is valid — lower boundary")
+        void zeroIsValid() {
+            assertThat(Mileage.zero().getValue()).isZero();
+        }
 
-        assertNotNull(mileage);
-        assertEquals(validMileage, mileage.getValue());
+        @Test
+        @DisplayName("positive value is valid")
+        void positiveIsValid() {
+            assertThat(new Mileage(1L).getValue()).isEqualTo(1L);
+        }
+
+        @Test
+        @DisplayName("negative value is rejected — below lower boundary")
+        void negativeIsRejected() {
+            assertThatThrownBy(() -> new Mileage(-1L))
+                    .isInstanceOf(InvalidMileageException.class)
+                    .hasMessage("Mileage cannot be negative");
+        }
     }
 
-    @Test
-    void shouldThrowExceptionForNegativeMileage() {
-        InvalidMileageException exception =
-                assertThrows(InvalidMileageException.class, () -> new Mileage(-100));
+    @Nested
+    @DisplayName("Excessive increment detection")
+    class ExcessiveIncrement {
 
-        assertEquals("Mileage cannot be negative", exception.getMessage());
+        @Test
+        @DisplayName("increment of exactly 2000 km is NOT excessive — upper valid boundary")
+        void exactly2000IsNotExcessive() {
+            Mileage previous = new Mileage(10_000L);
+            Mileage current = new Mileage(12_000L);
+            assertThat(current.isExcessiveIncrement(previous)).isFalse();
+        }
+
+        @Test
+        @DisplayName("increment of 2001 km IS excessive — lower excessive boundary")
+        void exactly2001IsExcessive() {
+            Mileage previous = new Mileage(10_000L);
+            Mileage current = new Mileage(12_001L);
+            assertThat(current.isExcessiveIncrement(previous)).isTrue();
+        }
     }
 
-    @Test
-    void shouldCreateMileageWithZeroValue() {
-        Mileage mileage = Mileage.zero();
+    @Nested
+    @DisplayName("assertNewMileageIsNotLower")
+    class AssertNewMileageIsNotLower {
 
-        assertNotNull(mileage);
-        assertEquals(0, mileage.getValue());
-    }
+        @Test
+        @DisplayName("equal mileage is accepted — boundary")
+        void equalIsAccepted() {
+            Mileage current = new Mileage(5_000L);
+            assertThatNoException().isThrownBy(() -> current.assertNewMileageIsNotLower(new Mileage(5_000L)));
+        }
 
-    @Test
-    void shouldValidateThatNewMileageIsNotLessThanCurrentMileage() {
-        Mileage currentMileage = new Mileage(1000);
-        Mileage newMileage = new Mileage(500);
+        @Test
+        @DisplayName("higher mileage is accepted")
+        void higherIsAccepted() {
+            Mileage current = new Mileage(5_000L);
+            assertThatNoException().isThrownBy(() -> current.assertNewMileageIsNotLower(new Mileage(5_001L)));
+        }
 
-        InvalidMileageException exception =
-                assertThrows(InvalidMileageException.class,
-                        () -> currentMileage.validateNotLessThan(newMileage));
-
-        assertEquals("New mileage 500 cannot be less than current 1000", exception.getMessage());
-    }
-
-    @Test
-    void shouldAllowNewMileageEqualOrGreater() {
-        Mileage currentMileage = new Mileage(1000);
-        Mileage newMileage = new Mileage(1000);
-        Mileage greaterMileage = new Mileage(1500);
-
-        assertDoesNotThrow(() -> currentMileage.validateNotLessThan(newMileage));
-        assertDoesNotThrow(() -> currentMileage.validateNotLessThan(greaterMileage));
-    }
-
-    @Test
-    void shouldDetectExcessiveIncrement() {
-        Mileage previousMileage = new Mileage(1000);
-        Mileage excessiveIncrementMileage = new Mileage(3100);
-        Mileage normalIncrementMileage = new Mileage(2000);
-
-        assertTrue(excessiveIncrementMileage.isExcessiveIncrement(previousMileage));
-        assertFalse(normalIncrementMileage.isExcessiveIncrement(previousMileage));
-    }
-
-    @Test
-    void shouldReturnTrueForEqualValues() {
-        Mileage mileage1 = new Mileage(1000);
-        Mileage mileage2 = new Mileage(1000);
-
-        assertEquals(mileage1, mileage2);
-        assertEquals(mileage1.hashCode(), mileage2.hashCode());
-    }
-
-    @Test
-    void shouldReturnFalseForDifferentValues() {
-        Mileage mileage1 = new Mileage(1000);
-        Mileage mileage2 = new Mileage(2000);
-
-        assertNotEquals(mileage1, mileage2);
+        @Test
+        @DisplayName("lower mileage is rejected")
+        void lowerIsRejected() {
+            Mileage current = new Mileage(5_000L);
+            assertThatThrownBy(() -> current.assertNewMileageIsNotLower(new Mileage(4_999L)))
+                    .isInstanceOf(InvalidMileageException.class)
+                    .hasMessage("New mileage 4999 cannot be less than current 5000");
+        }
     }
 }

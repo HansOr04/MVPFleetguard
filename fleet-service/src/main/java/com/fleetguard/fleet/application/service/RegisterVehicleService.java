@@ -10,6 +10,7 @@ import com.fleetguard.fleet.domain.valueobject.Plate;
 import com.fleetguard.fleet.domain.valueobject.Vin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class RegisterVehicleService implements RegisterVehicleUseCase {
     private final VehicleRepositoryPort vehicleRepository;
 
     @Override
+    @Transactional
     public RegisterVehicleResponse execute(RegisterVehicleCommand command) {
 
         if (vehicleRepository.existsByPlate(command.plate())) {

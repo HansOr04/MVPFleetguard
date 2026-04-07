@@ -14,12 +14,14 @@ public class MileageLogMapper {
                 mileageLog.getMileageValue().getValue(),
                 mileageLog.getKmTraveled(),
                 mileageLog.getRecordedAt(),
-                mileageLog.getRecordedBy()
+                mileageLog.getRecordedBy(),
+                mileageLog.isExcessiveIncrement(),
+                mileageLog.getVehicleTypeId()
         );
     }
 
     public static MileageLog toDomain(MileageLogJpaEntity entity) {
-        return new MileageLog(
+        return MileageLog.reconstitute(
                 entity.getId(),
                 entity.getVehicleId(),
                 new Mileage(entity.getPreviousMileage()),

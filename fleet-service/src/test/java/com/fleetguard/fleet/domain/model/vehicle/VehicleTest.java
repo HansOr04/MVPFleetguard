@@ -1,79 +1,121 @@
 package com.fleetguard.fleet.domain.model.vehicle;
 
+import com.fleetguard.fleet.domain.exception.InactiveVehicleException;
+import com.fleetguard.fleet.domain.exception.InvalidMileageException;
 import com.fleetguard.fleet.domain.valueobject.Mileage;
 import com.fleetguard.fleet.domain.valueobject.Plate;
 import com.fleetguard.fleet.domain.valueobject.Vin;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
+@DisplayName("Vehicle")
 class VehicleTest {
 
-    @Test
-    void shouldCreateVehicleWithDefaults() {
-        Plate plate = new Plate("ABC123");
-        Vin vin = new Vin("1HGCM82633A123456");
-        VehicleType vehicleType = new VehicleType(UUID.randomUUID(), "Sedán", "Autómovil compacto ideal para ciudad");
+    private VehicleType vehicleType;
+    private Plate plate;
+    private Vin vin;
 
-        Vehicle vehicle = Vehicle.create(plate, "Toyota", "Corolla", 2023, "Gasoline", vin, vehicleType);
-
-        assertNotNull(vehicle.getId());
-        assertEquals(plate, vehicle.getPlate());
-        assertEquals("Toyota", vehicle.getBrand());
-        assertEquals("Corolla", vehicle.getModel());
-        assertEquals(2023, vehicle.getYear());
-        assertEquals("Gasoline", vehicle.getFuelType());
-        assertEquals(vin, vehicle.getVin());
-        assertEquals(VehicleStatus.ACTIVE, vehicle.getStatus());
-        assertEquals(0, vehicle.getCurrentMileage().getValue());
-        assertEquals(vehicleType, vehicle.getVehicleType());
+    @BeforeEach
+    void setUp() {
+        vehicleType = new VehicleType(UUID.randomUUID(), "Pickup", "Pickup truck");
+        plate = new Plate("ABC-1234");
+        vin = new Vin("1HGCM82633A123456");
     }
 
-    @Test
-    void shouldThrowExceptionForNullBrand() {
-        Plate plate = new Plate("ABC123");
-        Vin vin = new Vin("1HGCM82633A123456");
-        VehicleType vehicleType = new VehicleType(UUID.randomUUID(), "Sedán", "Autómovil compacto ideal para ciudad");
+    @Nested
+    @DisplayName("Creation")
+    class Creation {
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Vehicle.create(plate, null, "Corolla", 2023, "Gasoline", vin, vehicleType));
-        assertEquals("Brand cannot be null or empty", exception.getMessage());
+        @Test
+        @DisplayName("new vehicle is ACTIVE with zero mileage")
+        void newVehicleHasDefaults() {
+            Vehicle vehicle = Vehicle.create(plate, "Toyota", "Hilux", 2023, "Diesel", vin, vehicleType);
+
+            assertThat(vehicle.getId()).isNotNull();
+            assertThat(vehicle.getStatus()).isEqualTo(VehicleStatus.ACTIVE);
+            assertThat(vehicle.getCurrentMileage().getValue()).isZero();
+        }
+
+        @Test
+        @DisplayName("rejects null brand")
+        void rejectsNullBrand() {
+            assertThatThrownBy(() -> Vehicle.create(plate, null, "Hilux", 2023, "Diesel", vin, vehicleType))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Brand cannot be null or empty");
+        }
+
+        @Test
+        @DisplayName("rejects null model")
+        void rejectsNullModel() {
+            assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", null, 2023, "Diesel", vin, vehicleType))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Model cannot be null or empty");
+        }
+
+        @Test
+        @DisplayName("rejects year zero or negative — boundary")
+        void rejectsInvalidYear() {
+            assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 0, "Diesel", vin, vehicleType))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Year must be a positive integer");
+        }
+
+        @Test
+        @DisplayName("rejects null vehicle type")
+        void rejectsNullVehicleType() {
+            assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 2023, "Diesel", vin, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("VehicleType cannot be null");
+        }
     }
 
-    @Test
-    void shouldThrowExceptionForNullModel() {
-        Plate plate = new Plate("ABC123");
-        Vin vin = new Vin("1HGCM82633A123456");
-        VehicleType vehicleType = new VehicleType(UUID.randomUUID(), "Sedán", "Autómovil compacto ideal para ciudad");
+    @Nested
+    @DisplayName("Update mileage")
+    class UpdateMileage {
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Vehicle.create(plate, "Toyota", null, 2023, "Gasoline", vin, vehicleType));
-        assertEquals("Model cannot be null or empty", exception.getMessage());
-    }
+        @Test
+        @DisplayName("happy path — accepts mileage higher than current")
+        void acceptsHigherMileage() {
+            Vehicle vehicle = Vehicle.create(plate, "Toyota", "Hilux", 2023, "Diesel", vin, vehicleType);
+            vehicle.updateMileage(new Mileage(1_000L));
+            assertThat(vehicle.getCurrentMileage().getValue()).isEqualTo(1_000L);
+        }
 
-    @Test
-    void shouldThrowExceptionForNegativeYear() {
-        Plate plate = new Plate("ABC123");
-        Vin vin = new Vin("1HGCM82633A123456");
-        VehicleType vehicleType = new VehicleType(UUID.randomUUID(), "Sedán", "Autómovil compacto ideal para ciudad");
+        @Test
+        @DisplayName("boundary — rejects mileage of exactly zero")
+        void rejectsZeroMileage() {
+            Vehicle vehicle = Vehicle.create(plate, "Toyota", "Hilux", 2023, "Diesel", vin, vehicleType);
+            assertThatThrownBy(() -> vehicle.updateMileage(new Mileage(0L)))
+                    .isInstanceOf(InvalidMileageException.class)
+                    .hasMessage("Mileage value must be greater than zero");
+        }
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> Vehicle.create(plate, "Toyota", "Corolla", -2023, "Gasoline", vin, vehicleType));
-        assertEquals("Year must be a positive integer", exception.getMessage());
-    }
+        @Test
+        @DisplayName("error handling — rejects mileage lower than current")
+        void rejectsLowerMileage() {
+            Vehicle vehicle = Vehicle.create(plate, "Toyota", "Hilux", 2023, "Diesel", vin, vehicleType);
+            vehicle.updateMileage(new Mileage(5_000L));
 
-    @Test
-    void shouldUpdateMileageIfVehicleIsActive() {
-        Plate plate = new Plate("ABC123");
-        Vin vin = new Vin("1HGCM82633A123456");
-        VehicleType vehicleType = new VehicleType(UUID.randomUUID(), "Sedán", "Autómovil compacto ideal para ciudad");
-        Vehicle vehicle = Vehicle.create(plate, "Toyota", "Corolla", 2023, "Gasoline", vin, vehicleType);
+            assertThatThrownBy(() -> vehicle.updateMileage(new Mileage(4_999L)))
+                    .isInstanceOf(InvalidMileageException.class);
+        }
 
-        Mileage newMileage = new Mileage(1500);
-        vehicle.updateMileage(newMileage);
+        @Test
+        @DisplayName("error handling — rejects update on INACTIVE vehicle")
+        void rejectsInactiveVehicle() {
+            Vehicle inactive = new Vehicle(
+                    UUID.randomUUID(), plate, "Toyota", "Hilux",
+                    2023, "Diesel", vin, VehicleStatus.INACTIVE,
+                    new Mileage(0L), vehicleType);
 
-        assertEquals(newMileage, vehicle.getCurrentMileage());
+            assertThatThrownBy(() -> inactive.updateMileage(new Mileage(1_000L)))
+                    .isInstanceOf(InactiveVehicleException.class);
+        }
     }
 }

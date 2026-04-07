@@ -41,4 +41,10 @@ public class MileageLogJpaEntity {
 
     @Column(name = "recorded_by", nullable = false)
     private String recordedBy;
+
+    @Column(name = "excessive_increment", nullable = false)
+    private boolean excessiveIncrement;
+
+    @Column(name = "vehicle_type_id")
+    private UUID vehicleTypeId;
 }
