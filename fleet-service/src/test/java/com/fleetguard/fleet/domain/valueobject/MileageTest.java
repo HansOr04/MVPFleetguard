@@ -83,4 +83,41 @@ class MileageTest {
                     .hasMessage("New mileage 4999 cannot be less than current 5000");
         }
     }
+
+    @Nested
+    @DisplayName("Equality and hashCode")
+    class EqualityAndHashCode {
+
+        @Test
+        @DisplayName("same instance is equal to itself")
+        void sameInstanceIsEqual() {
+            Mileage mileage = new Mileage(1000L);
+            assertThat(mileage).isEqualTo(mileage);
+        }
+
+        @Test
+        @DisplayName("two mileages with same value are equal")
+        void equalByValue() {
+            assertThat(new Mileage(1000L)).isEqualTo(new Mileage(1000L));
+        }
+
+        @Test
+        @DisplayName("null is not equal")
+        void nullIsNotEqual() {
+            assertThat(new Mileage(1000L)).isNotEqualTo(null);
+        }
+
+        @Test
+        @DisplayName("different type is not equal")
+        void differentTypeIsNotEqual() {
+            assertThat(new Mileage(1000L)).isNotEqualTo(1000L);
+        }
+
+        @Test
+        @DisplayName("same value produces same hashCode")
+        void sameHashCode() {
+            assertThat(new Mileage(1000L).hashCode())
+                    .isEqualTo(new Mileage(1000L).hashCode());
+        }
+    }
 }

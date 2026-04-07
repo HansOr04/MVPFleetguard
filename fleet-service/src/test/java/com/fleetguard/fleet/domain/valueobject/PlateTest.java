@@ -31,5 +31,48 @@ class PlateTest {
         void acceptsValidPlate() {
             assertThat(new Plate("ABC-1234").getValue()).isEqualTo("ABC-1234");
         }
+
+        @Test
+        @DisplayName("normalizes to uppercase")
+        void normalizesToUppercase() {
+            assertThat(new Plate("abc-1234").getValue()).isEqualTo("ABC-1234");
+        }
+    }
+
+    @Nested
+    @DisplayName("Equality and hashCode")
+    class EqualityAndHashCode {
+
+        @Test
+        @DisplayName("same instance is equal to itself")
+        void sameInstanceIsEqual() {
+            Plate plate = new Plate("ABC-1234");
+            assertThat(plate).isEqualTo(plate);
+        }
+
+        @Test
+        @DisplayName("two plates with same value are equal")
+        void equalByValue() {
+            assertThat(new Plate("ABC-1234")).isEqualTo(new Plate("ABC-1234"));
+        }
+
+        @Test
+        @DisplayName("null is not equal")
+        void nullIsNotEqual() {
+            assertThat(new Plate("ABC-1234")).isNotEqualTo(null);
+        }
+
+        @Test
+        @DisplayName("different type is not equal")
+        void differentTypeIsNotEqual() {
+            assertThat(new Plate("ABC-1234")).isNotEqualTo("ABC-1234");
+        }
+
+        @Test
+        @DisplayName("same value produces same hashCode")
+        void sameHashCode() {
+            assertThat(new Plate("ABC-1234").hashCode())
+                    .isEqualTo(new Plate("ABC-1234").hashCode());
+        }
     }
 }
