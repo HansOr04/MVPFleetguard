@@ -51,6 +51,14 @@ class VehicleTest {
         }
 
         @Test
+        @DisplayName("rejects blank brand")
+        void rejectsBlankBrand() {
+            assertThatThrownBy(() -> Vehicle.create(plate, "  ", "Hilux", 2023, "Diesel", vin, vehicleType))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Brand cannot be null or empty");
+        }
+
+        @Test
         @DisplayName("rejects null model")
         void rejectsNullModel() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", null, 2023, "Diesel", vin, vehicleType))
@@ -59,9 +67,41 @@ class VehicleTest {
         }
 
         @Test
-        @DisplayName("rejects year zero or negative — boundary")
-        void rejectsInvalidYear() {
+        @DisplayName("rejects blank model")
+        void rejectsBlankModel() {
+            assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "  ", 2023, "Diesel", vin, vehicleType))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Model cannot be null or empty");
+        }
+
+        @Test
+        @DisplayName("rejects null fuel type")
+        void rejectsNullFuelType() {
+            assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 2023, null, vin, vehicleType))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Fuel type cannot be null or empty");
+        }
+
+        @Test
+        @DisplayName("rejects blank fuel type")
+        void rejectsBlankFuelType() {
+            assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 2023, "  ", vin, vehicleType))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Fuel type cannot be null or empty");
+        }
+
+        @Test
+        @DisplayName("rejects year zero — boundary")
+        void rejectsYearZero() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 0, "Diesel", vin, vehicleType))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Year must be a positive integer");
+        }
+
+        @Test
+        @DisplayName("rejects negative year")
+        void rejectsNegativeYear() {
+            assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", -1, "Diesel", vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Year must be a positive integer");
         }
