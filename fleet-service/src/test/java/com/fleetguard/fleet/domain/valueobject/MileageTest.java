@@ -4,8 +4,6 @@ import com.fleetguard.fleet.domain.exception.InvalidMileageException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -59,28 +57,28 @@ class MileageTest {
     }
 
     @Nested
-    @DisplayName("validateNotLessThan")
-    class ValidateNotLessThan {
+    @DisplayName("assertNewMileageIsNotLower")
+    class AssertNewMileageIsNotLower {
 
         @Test
         @DisplayName("equal mileage is accepted — boundary")
         void equalIsAccepted() {
             Mileage current = new Mileage(5_000L);
-            assertThatNoException().isThrownBy(() -> current.validateNotLessThan(new Mileage(5_000L)));
+            assertThatNoException().isThrownBy(() -> current.assertNewMileageIsNotLower(new Mileage(5_000L)));
         }
 
         @Test
         @DisplayName("higher mileage is accepted")
         void higherIsAccepted() {
             Mileage current = new Mileage(5_000L);
-            assertThatNoException().isThrownBy(() -> current.validateNotLessThan(new Mileage(5_001L)));
+            assertThatNoException().isThrownBy(() -> current.assertNewMileageIsNotLower(new Mileage(5_001L)));
         }
 
         @Test
         @DisplayName("lower mileage is rejected")
         void lowerIsRejected() {
             Mileage current = new Mileage(5_000L);
-            assertThatThrownBy(() -> current.validateNotLessThan(new Mileage(4_999L)))
+            assertThatThrownBy(() -> current.assertNewMileageIsNotLower(new Mileage(4_999L)))
                     .isInstanceOf(InvalidMileageException.class)
                     .hasMessage("New mileage 4999 cannot be less than current 5000");
         }

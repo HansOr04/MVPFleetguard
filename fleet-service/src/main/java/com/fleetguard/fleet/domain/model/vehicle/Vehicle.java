@@ -67,7 +67,7 @@ public class Vehicle extends AggregateRoot {
         if (newMileage.getValue() <= 0) {
             throw new InvalidMileageException("Mileage value must be greater than zero");
         }
-        this.currentMileage.validateNotLessThan(newMileage);
+        this.currentMileage.assertNewMileageIsNotLower(newMileage);
         this.currentMileage = newMileage;
     }
 }
