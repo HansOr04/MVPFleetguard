@@ -2,7 +2,6 @@ package com.fleetguard.fleet.application.service;
 
 import com.fleetguard.fleet.application.ports.in.RegisterMileageUseCase.RegisterMileageCommand;
 import com.fleetguard.fleet.application.ports.in.RegisterMileageUseCase.RegisterMileageResponse;
-import com.fleetguard.fleet.application.ports.out.EventPublisherPort;
 import com.fleetguard.fleet.application.ports.out.MileageLogRepositoryPort;
 import com.fleetguard.fleet.application.ports.out.VehicleRepositoryPort;
 import com.fleetguard.fleet.domain.exception.InvalidMileageException;
@@ -19,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -33,7 +33,7 @@ class RegisterMileageServiceTest {
 
     @Mock private VehicleRepositoryPort vehicleRepository;
     @Mock private MileageLogRepositoryPort mileageLogRepository;
-    @Mock private EventPublisherPort eventPublisher;
+    @Mock private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private RegisterMileageService service;
@@ -69,7 +69,7 @@ class RegisterMileageServiceTest {
             assertThat(response.mileageValue()).isEqualTo(1_000L);
             assertThat(response.previousMileage()).isZero();
             assertThat(response.kmTraveled()).isEqualTo(1_000L);
-            verify(eventPublisher).publish(any());
+            verify(applicationEventPublisher, atLeastOnce()).publishEvent(any(Object.class));
         }
 
         @Test
@@ -110,7 +110,7 @@ class RegisterMileageServiceTest {
                     .isInstanceOf(VehicleNotFoundException.class);
 
             verify(mileageLogRepository, never()).save(any());
-            verify(eventPublisher, never()).publish(any());
+            verify(applicationEventPublisher, never()).publishEvent(any());
         }
 
         @Test
