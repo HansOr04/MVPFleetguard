@@ -123,7 +123,7 @@ export function useMaintenanceForm(
       const e = error as { status?: number; message?: string; errors?: string[] };
       if (e.status === 0) {
         showToast('Sin conexión con el servidor', 'error');
-      } else if (e.status === 400 && e.errors) {
+      } else if (e.status === 400 && e.errors && e.errors.length > 0) {
         showToast(`Error de validación: ${e.errors.join(', ')}`, 'error');
       } else if (e.status === 404) {
         showToast('Alerta o vehículo no encontrado.', 'error');

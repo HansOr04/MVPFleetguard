@@ -71,7 +71,7 @@ export function useRegisterVehicleForm(
         showToast('Error de registro: Placa duplicada', 'error');
       } else if (e.status === 0) {
         showToast('Sin conexión con el servidor', 'error');
-      } else if (e.status === 400 && e.errors) {
+      } else if (e.status === 400 && e.errors && e.errors.length > 0) {
         showToast(`Error de validación: ${e.errors.join(', ')}`, 'error');
       } else {
         showToast(e.message || 'Error al registrar vehículo', 'error');

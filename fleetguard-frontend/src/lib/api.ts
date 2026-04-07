@@ -107,15 +107,6 @@ export const vehicleApi = {
 
 export const rulesApi = {
 
-  getAll: async (): Promise<MaintenanceRule[]> => {
-    try {
-      return await request<MaintenanceRule[]>(`${RULES_URL}/api/maintenance-rules`);
-    } catch (e: unknown) {
-      if ((e as ApiError).status === 0) return mockRules;
-      throw e;
-    }
-  },
-
   create: async (data: CreateRuleDto): Promise<MaintenanceRule> => {
     try {
       return await request<MaintenanceRule>(`${RULES_URL}/api/maintenance-rules`, {
