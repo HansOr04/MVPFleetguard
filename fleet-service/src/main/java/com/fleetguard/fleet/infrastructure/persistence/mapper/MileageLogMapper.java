@@ -14,7 +14,9 @@ public class MileageLogMapper {
                 mileageLog.getMileageValue().getValue(),
                 mileageLog.getKmTraveled(),
                 mileageLog.getRecordedAt(),
-                mileageLog.getRecordedBy()
+                mileageLog.getRecordedBy(),
+                mileageLog.isExcessiveIncrement(),
+                mileageLog.getVehicleTypeId()
         );
     }
 
