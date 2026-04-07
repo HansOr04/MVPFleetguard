@@ -25,7 +25,7 @@ public class MaintenanceRecordPersistenceMapper {
     }
 
     public static MaintenanceRecord toDomain(MaintenanceRecordJpaEntity entity) {
-        return new MaintenanceRecord(
+        return MaintenanceRecord.reconstitute(
                 entity.getId(),
                 entity.getVehicleId(),
                 entity.getAlertId(),

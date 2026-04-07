@@ -1,0 +1,3 @@
+fleet:
+  service:
+    url: http://fleet-service:8080
