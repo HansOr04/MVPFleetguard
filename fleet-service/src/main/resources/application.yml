@@ -29,6 +29,10 @@ spring:
     clean-on-validation-error: true
     validate-on-migrate: true
 
+fleetguard:
+  events:
+    publisher: rabbitMQEventPublisher
+
 logging:
   level:
     org.flywaydb: DEBUG
