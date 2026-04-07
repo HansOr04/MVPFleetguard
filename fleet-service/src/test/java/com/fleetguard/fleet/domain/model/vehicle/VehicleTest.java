@@ -88,11 +88,12 @@ class VehicleTest {
         }
 
         @Test
-        @DisplayName("boundary — accepts mileage equal to current")
-        void acceptsEqualMileage() {
+        @DisplayName("boundary — rejects mileage of exactly zero")
+        void rejectsZeroMileage() {
             Vehicle vehicle = Vehicle.create(plate, "Toyota", "Hilux", 2023, "Diesel", vin, vehicleType);
-            vehicle.updateMileage(new Mileage(0L));
-            assertThat(vehicle.getCurrentMileage().getValue()).isZero();
+            assertThatThrownBy(() -> vehicle.updateMileage(new Mileage(0L)))
+                    .isInstanceOf(InvalidMileageException.class)
+                    .hasMessage("Mileage value must be greater than zero");
         }
 
         @Test

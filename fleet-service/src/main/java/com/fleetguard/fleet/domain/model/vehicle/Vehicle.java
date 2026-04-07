@@ -1,6 +1,7 @@
 package com.fleetguard.fleet.domain.model.vehicle;
 
 import com.fleetguard.fleet.domain.exception.InactiveVehicleException;
+import com.fleetguard.fleet.domain.exception.InvalidMileageException;
 import com.fleetguard.fleet.domain.model.AggregateRoot;
 import com.fleetguard.fleet.domain.valueobject.Mileage;
 import com.fleetguard.fleet.domain.valueobject.Plate;
@@ -62,6 +63,9 @@ public class Vehicle extends AggregateRoot {
     public void updateMileage(Mileage newMileage) {
         if (this.status != VehicleStatus.ACTIVE) {
             throw new InactiveVehicleException(this.id);
+        }
+        if (newMileage.getValue() <= 0) {
+            throw new InvalidMileageException("Mileage value must be greater than zero");
         }
         this.currentMileage.validateNotLessThan(newMileage);
         this.currentMileage = newMileage;

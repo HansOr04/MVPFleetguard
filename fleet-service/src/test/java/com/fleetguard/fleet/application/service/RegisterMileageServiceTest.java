@@ -8,9 +8,7 @@ import com.fleetguard.fleet.application.ports.out.VehicleRepositoryPort;
 import com.fleetguard.fleet.domain.exception.InvalidMileageException;
 import com.fleetguard.fleet.domain.exception.VehicleNotFoundException;
 import com.fleetguard.fleet.domain.model.vehicle.Vehicle;
-import com.fleetguard.fleet.domain.model.vehicle.VehicleStatus;
 import com.fleetguard.fleet.domain.model.vehicle.VehicleType;
-import com.fleetguard.fleet.domain.valueobject.Mileage;
 import com.fleetguard.fleet.domain.valueobject.Plate;
 import com.fleetguard.fleet.domain.valueobject.Vin;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,7 +119,8 @@ class RegisterMileageServiceTest {
             when(vehicleRepository.findByPlate("ABC-1234")).thenReturn(Optional.of(activeVehicle));
 
             assertThatThrownBy(() -> service.execute(commandWith(0L)))
-                    .isInstanceOf(InvalidMileageException.class);
+                    .isInstanceOf(InvalidMileageException.class)
+                    .hasMessage("Mileage value must be greater than zero");
 
             verify(mileageLogRepository, never()).save(any());
         }
