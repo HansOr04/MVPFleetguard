@@ -6,8 +6,11 @@ import com.fleetguard.fleet.application.ports.out.MileageLogRepositoryPort;
 import com.fleetguard.fleet.application.ports.out.VehicleRepositoryPort;
 import com.fleetguard.fleet.domain.exception.InvalidMileageException;
 import com.fleetguard.fleet.domain.exception.VehicleNotFoundException;
+import com.fleetguard.fleet.domain.factory.MileageLogFactory;
+import com.fleetguard.fleet.domain.model.mileage.MileageLog;
 import com.fleetguard.fleet.domain.model.vehicle.Vehicle;
 import com.fleetguard.fleet.domain.model.vehicle.VehicleType;
+import com.fleetguard.fleet.domain.valueobject.Mileage;
 import com.fleetguard.fleet.domain.valueobject.Plate;
 import com.fleetguard.fleet.domain.valueobject.Vin;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,11 +38,13 @@ class RegisterMileageServiceTest {
     @Mock private VehicleRepositoryPort vehicleRepository;
     @Mock private MileageLogRepositoryPort mileageLogRepository;
     @Mock private ApplicationEventPublisher applicationEventPublisher;
+    @Mock private MileageLogFactory mileageLogFactory;
 
     @InjectMocks
     private RegisterMileageService service;
 
     private Vehicle activeVehicle;
+    private MileageLog stubbedLog;
 
     @BeforeEach
     void setUp() {
@@ -46,6 +52,11 @@ class RegisterMileageServiceTest {
         activeVehicle = Vehicle.create(
                 new Plate("ABC-1234"), "Toyota", "Hilux",
                 2023, "Diesel", new Vin("1HGCM82633A123456"), type);
+
+        // MileageLog real construido con la factory real — sin mocks internos
+        MileageLogFactory realFactory = new MileageLogFactory();
+        stubbedLog = realFactory.create(
+                activeVehicle, 1_000L, "Juan", LocalDateTime.now());
     }
 
     private RegisterMileageCommand commandWith(long mileage) {
@@ -61,6 +72,7 @@ class RegisterMileageServiceTest {
         void registersMileageAndPublishesEvent() {
             when(vehicleRepository.findByPlate("ABC-1234")).thenReturn(Optional.of(activeVehicle));
             when(vehicleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(mileageLogFactory.create(any(), anyLong(), any(), any())).thenReturn(stubbedLog);
             when(mileageLogRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             RegisterMileageResponse response = service.execute(commandWith(1_000L));
@@ -75,8 +87,13 @@ class RegisterMileageServiceTest {
         @Test
         @DisplayName("flags excessive increment when over 2000 km — boundary")
         void flagsExcessiveIncrement() {
+            MileageLogFactory realFactory = new MileageLogFactory();
+            MileageLog excessiveLog = realFactory.create(
+                    activeVehicle, 2_001L, "Juan", LocalDateTime.now());
+
             when(vehicleRepository.findByPlate("ABC-1234")).thenReturn(Optional.of(activeVehicle));
             when(vehicleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(mileageLogFactory.create(any(), anyLong(), any(), any())).thenReturn(excessiveLog);
             when(mileageLogRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             RegisterMileageResponse response = service.execute(commandWith(2_001L));
@@ -87,8 +104,13 @@ class RegisterMileageServiceTest {
         @Test
         @DisplayName("does NOT flag excessive increment at exactly 2000 km — boundary")
         void doesNotFlagAt2000() {
+            MileageLogFactory realFactory = new MileageLogFactory();
+            MileageLog normalLog = realFactory.create(
+                    activeVehicle, 2_000L, "Juan", LocalDateTime.now());
+
             when(vehicleRepository.findByPlate("ABC-1234")).thenReturn(Optional.of(activeVehicle));
             when(vehicleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+            when(mileageLogFactory.create(any(), anyLong(), any(), any())).thenReturn(normalLog);
             when(mileageLogRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
             RegisterMileageResponse response = service.execute(commandWith(2_000L));
@@ -109,6 +131,7 @@ class RegisterMileageServiceTest {
             assertThatThrownBy(() -> service.execute(commandWith(1_000L)))
                     .isInstanceOf(VehicleNotFoundException.class);
 
+            verify(mileageLogFactory, never()).create(any(), anyLong(), any(), any());
             verify(mileageLogRepository, never()).save(any());
             verify(applicationEventPublisher, never()).publishEvent(any());
         }
@@ -122,6 +145,7 @@ class RegisterMileageServiceTest {
                     .isInstanceOf(InvalidMileageException.class)
                     .hasMessage("Mileage value must be greater than zero");
 
+            verify(mileageLogFactory, never()).create(any(), anyLong(), any(), any());
             verify(mileageLogRepository, never()).save(any());
         }
 
