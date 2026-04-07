@@ -7,6 +7,7 @@ import com.fleetguard.rulesalerts.application.ports.out.MaintenanceRecordReposit
 import com.fleetguard.rulesalerts.domain.exception.AlertNotFoundException;
 import com.fleetguard.rulesalerts.domain.exception.InvalidMaintenanceException;
 import com.fleetguard.rulesalerts.domain.model.alert.MaintenanceAlert;
+import com.fleetguard.rulesalerts.domain.model.maintenance.MaintenanceRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -111,7 +112,8 @@ class RegisterMaintenanceServiceTest {
 
             service.execute(validCommand());
 
-            ArgumentCaptor<MaintenanceAlert> captor = ArgumentCaptor.forClass(MaintenanceAlert.class);
+            ArgumentCaptor<MaintenanceAlert> captor =
+                    ArgumentCaptor.forClass(MaintenanceAlert.class);
             verify(maintenanceAlertRepositoryPort, times(1)).save(captor.capture());
             assertThat(captor.getValue().getStatus()).isEqualTo("RESOLVED");
             assertThat(captor.getValue().getId()).isEqualTo(alertId);
@@ -160,6 +162,8 @@ class RegisterMaintenanceServiceTest {
         @ValueSource(strings = {"   "})
         @DisplayName("rejects null, empty and blank serviceType")
         void rejectsInvalidServiceType(String serviceType) {
+            stubAlertFound();
+
             RegisterMaintenanceCommand command = new RegisterMaintenanceCommand(
                     "ABC-1234", alertId, serviceType, "desc",
                     BigDecimal.ZERO, "Shop",
@@ -169,7 +173,7 @@ class RegisterMaintenanceServiceTest {
                     .isInstanceOf(InvalidMaintenanceException.class)
                     .hasMessage("El tipo de servicio es obligatorio");
 
-            verifyNoInteractions(maintenanceAlertRepositoryPort, maintenanceRecordRepositoryPort);
+            verify(maintenanceRecordRepositoryPort, never()).save(any());
         }
     }
 
@@ -180,6 +184,8 @@ class RegisterMaintenanceServiceTest {
         @Test
         @DisplayName("rejects future performedAt — boundary: tomorrow")
         void rejectsFutureDate() {
+            stubAlertFound();
+
             RegisterMaintenanceCommand command = new RegisterMaintenanceCommand(
                     "ABC-1234", alertId, "Oil Change", "desc",
                     BigDecimal.ZERO, "Shop",
@@ -189,7 +195,7 @@ class RegisterMaintenanceServiceTest {
                     .isInstanceOf(InvalidMaintenanceException.class)
                     .hasMessage("La fecha del servicio no puede ser futura");
 
-            verifyNoInteractions(maintenanceAlertRepositoryPort, maintenanceRecordRepositoryPort);
+            verify(maintenanceRecordRepositoryPort, never()).save(any());
         }
     }
 
@@ -200,6 +206,8 @@ class RegisterMaintenanceServiceTest {
         @Test
         @DisplayName("rejects mileage of zero — boundary lower invalid")
         void rejectsZeroMileage() {
+            stubAlertFound();
+
             RegisterMaintenanceCommand command = new RegisterMaintenanceCommand(
                     "ABC-1234", alertId, "Oil Change", "desc",
                     BigDecimal.ZERO, "Shop",
@@ -209,12 +217,14 @@ class RegisterMaintenanceServiceTest {
                     .isInstanceOf(InvalidMaintenanceException.class)
                     .hasMessage("El kilometraje del servicio debe ser mayor a cero");
 
-            verifyNoInteractions(maintenanceAlertRepositoryPort, maintenanceRecordRepositoryPort);
+            verify(maintenanceRecordRepositoryPort, never()).save(any());
         }
 
         @Test
         @DisplayName("rejects negative mileage — boundary")
         void rejectsNegativeMileage() {
+            stubAlertFound();
+
             RegisterMaintenanceCommand command = new RegisterMaintenanceCommand(
                     "ABC-1234", alertId, "Oil Change", "desc",
                     BigDecimal.ZERO, "Shop",
@@ -228,13 +238,13 @@ class RegisterMaintenanceServiceTest {
         @Test
         @DisplayName("accepts mileage of 1 — boundary lower valid")
         void acceptsMileageOf1() {
+            stubAlertFound();
+            stubSaveRecord();
+
             RegisterMaintenanceCommand command = new RegisterMaintenanceCommand(
                     "ABC-1234", alertId, "Oil Change", "desc",
                     BigDecimal.ZERO, "Shop",
                     LocalDateTime.now().minusDays(1), 1L, "Juan");
-
-            stubAlertFound();
-            stubSaveRecord();
 
             assertThatNoException().isThrownBy(() -> service.execute(command));
         }
@@ -249,6 +259,8 @@ class RegisterMaintenanceServiceTest {
         @ValueSource(strings = {"   "})
         @DisplayName("rejects null, empty and blank recordedBy")
         void rejectsInvalidRecordedBy(String recordedBy) {
+            stubAlertFound();
+
             RegisterMaintenanceCommand command = new RegisterMaintenanceCommand(
                     "ABC-1234", alertId, "Oil Change", "desc",
                     BigDecimal.ZERO, "Shop",
@@ -258,7 +270,7 @@ class RegisterMaintenanceServiceTest {
                     .isInstanceOf(InvalidMaintenanceException.class)
                     .hasMessage("El nombre de quien registra es obligatorio");
 
-            verifyNoInteractions(maintenanceAlertRepositoryPort, maintenanceRecordRepositoryPort);
+            verify(maintenanceRecordRepositoryPort, never()).save(any());
         }
     }
 

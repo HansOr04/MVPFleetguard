@@ -1,10 +1,7 @@
 package com.fleetguard.rulesalerts.infrastructure.web.controller;
 
-import com.fleetguard.rulesalerts.application.ports.out.MaintenanceAlertRepositoryPort;
-import com.fleetguard.rulesalerts.application.ports.out.MaintenanceRuleQueryPort;
-import com.fleetguard.rulesalerts.application.ports.out.VehicleQueryPort;
-import com.fleetguard.rulesalerts.domain.model.alert.MaintenanceAlert;
-import com.fleetguard.rulesalerts.domain.model.rule.MaintenanceRule;
+import com.fleetguard.rulesalerts.application.ports.in.GetAlertsByVehicleUseCase;
+import com.fleetguard.rulesalerts.application.ports.in.GetAlertsUseCase;
 import com.fleetguard.rulesalerts.infrastructure.web.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,11 +16,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -32,19 +27,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("AlertController")
 class AlertControllerTest {
 
-    @Mock private MaintenanceAlertRepositoryPort maintenanceAlertRepositoryPort;
-    @Mock private VehicleQueryPort vehicleQueryPort;
-    @Mock private MaintenanceRuleQueryPort maintenanceRuleQueryPort;
+    @Mock private GetAlertsUseCase getAlertsUseCase;
+    @Mock private GetAlertsByVehicleUseCase getAlertsByVehicleUseCase;
 
     @InjectMocks
     private AlertController controller;
 
     private MockMvc mockMvc;
 
-    private UUID vehicleId;
-    private UUID ruleId;
-    private MaintenanceAlert pendingAlert;
-    private MaintenanceRule rule;
+    private GetAlertsUseCase.AlertDetail pendingDetail;
 
     @BeforeEach
     void setUp() {
@@ -53,17 +44,10 @@ class AlertControllerTest {
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
 
-        vehicleId = UUID.randomUUID();
-        ruleId = UUID.randomUUID();
-
-        pendingAlert = new MaintenanceAlert(
-                UUID.randomUUID(), vehicleId, UUID.randomUUID(), ruleId,
-                "PENDING", LocalDateTime.now(), 5000L);
-
-        rule = new MaintenanceRule(
-                ruleId, "Oil Change", "OIL",
-                5000, 500, "ACTIVE",
-                LocalDateTime.now(), LocalDateTime.now());
+        pendingDetail = new GetAlertsUseCase.AlertDetail(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), "Oil Change", "PENDING",
+                LocalDateTime.now(), 5000L);
     }
 
     @Nested
@@ -73,8 +57,7 @@ class AlertControllerTest {
         @Test
         @DisplayName("200 — returns all active alerts when no status param")
         void returnsAllActiveAlerts() throws Exception {
-            when(maintenanceAlertRepositoryPort.findAllActive()).thenReturn(List.of(pendingAlert));
-            when(maintenanceRuleQueryPort.findById(ruleId)).thenReturn(Optional.of(rule));
+            when(getAlertsUseCase.execute(null)).thenReturn(List.of(pendingDetail));
 
             mockMvc.perform(get("/api/alerts"))
                     .andExpect(status().isOk())
@@ -86,7 +69,7 @@ class AlertControllerTest {
         @Test
         @DisplayName("200 — returns alerts filtered by status param")
         void returnsFilteredByStatus() throws Exception {
-            when(maintenanceAlertRepositoryPort.findByStatus("WARNING")).thenReturn(List.of());
+            when(getAlertsUseCase.execute("WARNING")).thenReturn(List.of());
 
             mockMvc.perform(get("/api/alerts").param("status", "WARNING"))
                     .andExpect(status().isOk())
@@ -95,23 +78,12 @@ class AlertControllerTest {
 
         @Test
         @DisplayName("200 — returns empty list when no active alerts")
-        void returnsEmptyListWhenNoAlerts() throws Exception {
-            when(maintenanceAlertRepositoryPort.findAllActive()).thenReturn(List.of());
+        void returnsEmptyList() throws Exception {
+            when(getAlertsUseCase.execute(null)).thenReturn(List.of());
 
             mockMvc.perform(get("/api/alerts"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(0)));
-        }
-
-        @Test
-        @DisplayName("200 — uses fallback rule name when rule not found")
-        void usesFallbackRuleName() throws Exception {
-            when(maintenanceAlertRepositoryPort.findAllActive()).thenReturn(List.of(pendingAlert));
-            when(maintenanceRuleQueryPort.findById(ruleId)).thenReturn(Optional.empty());
-
-            mockMvc.perform(get("/api/alerts"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].ruleName").value("Regla desconocida"));
         }
     }
 
@@ -122,11 +94,12 @@ class AlertControllerTest {
         @Test
         @DisplayName("200 — returns active alerts for vehicle")
         void returnsActiveAlertsForVehicle() throws Exception {
-            when(vehicleQueryPort.findVehicleIdByPlate("ABC-1234"))
-                    .thenReturn(Optional.of(vehicleId));
-            when(maintenanceAlertRepositoryPort.findActiveByVehicleId(vehicleId))
-                    .thenReturn(List.of(pendingAlert));
-            when(maintenanceRuleQueryPort.findById(ruleId)).thenReturn(Optional.of(rule));
+            GetAlertsByVehicleUseCase.AlertDetail detail = new GetAlertsByVehicleUseCase.AlertDetail(
+                    pendingDetail.id(), pendingDetail.vehicleId(), pendingDetail.vehicleTypeId(),
+                    pendingDetail.ruleId(), "Oil Change", "PENDING",
+                    pendingDetail.triggeredAt(), pendingDetail.dueAtKm());
+
+            when(getAlertsByVehicleUseCase.execute("ABC-1234")).thenReturn(List.of(detail));
 
             mockMvc.perform(get("/api/alerts/vehicle/ABC-1234"))
                     .andExpect(status().isOk())
@@ -136,10 +109,9 @@ class AlertControllerTest {
         }
 
         @Test
-        @DisplayName("200 — returns empty list when vehicle not found in fleet-service")
+        @DisplayName("200 — returns empty list when vehicle not found")
         void returnsEmptyWhenVehicleNotFound() throws Exception {
-            when(vehicleQueryPort.findVehicleIdByPlate("ZZZ-000"))
-                    .thenReturn(Optional.empty());
+            when(getAlertsByVehicleUseCase.execute("ZZZ-000")).thenReturn(List.of());
 
             mockMvc.perform(get("/api/alerts/vehicle/ZZZ-000"))
                     .andExpect(status().isOk())
@@ -147,28 +119,13 @@ class AlertControllerTest {
         }
 
         @Test
-        @DisplayName("200 — returns empty list when vehicle has no active alerts")
+        @DisplayName("200 — returns empty list when no active alerts")
         void returnsEmptyWhenNoActiveAlerts() throws Exception {
-            when(vehicleQueryPort.findVehicleIdByPlate("ABC-1234"))
-                    .thenReturn(Optional.of(vehicleId));
-            when(maintenanceAlertRepositoryPort.findActiveByVehicleId(vehicleId))
-                    .thenReturn(List.of());
+            when(getAlertsByVehicleUseCase.execute("ABC-1234")).thenReturn(List.of());
 
             mockMvc.perform(get("/api/alerts/vehicle/ABC-1234"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(0)));
-        }
-
-        @Test
-        @DisplayName("200 — normalizes plate to uppercase before querying")
-        void normalizesPlateToUppercase() throws Exception {
-            when(vehicleQueryPort.findVehicleIdByPlate("ABC-1234"))
-                    .thenReturn(Optional.of(vehicleId));
-            when(maintenanceAlertRepositoryPort.findActiveByVehicleId(vehicleId))
-                    .thenReturn(List.of());
-
-            mockMvc.perform(get("/api/alerts/vehicle/abc-1234"))
-                    .andExpect(status().isOk());
         }
     }
 }

@@ -4,7 +4,6 @@ import com.fleetguard.rulesalerts.application.ports.in.RegisterMaintenanceUseCas
 import com.fleetguard.rulesalerts.application.ports.out.MaintenanceAlertRepositoryPort;
 import com.fleetguard.rulesalerts.application.ports.out.MaintenanceRecordRepositoryPort;
 import com.fleetguard.rulesalerts.domain.exception.AlertNotFoundException;
-import com.fleetguard.rulesalerts.domain.exception.InvalidMaintenanceException;
 import com.fleetguard.rulesalerts.domain.model.alert.MaintenanceAlert;
 import com.fleetguard.rulesalerts.domain.model.maintenance.MaintenanceRecord;
 import lombok.RequiredArgsConstructor;
@@ -25,27 +24,8 @@ public class RegisterMaintenanceService implements RegisterMaintenanceUseCase {
     @Override
     public RegisterMaintenanceResponse execute(RegisterMaintenanceCommand command) {
 
-        if (command.serviceType() == null || command.serviceType().isBlank()) {
-            throw new InvalidMaintenanceException("El tipo de servicio es obligatorio");
-        }
-
-        if (command.performedAt() != null && command.performedAt().isAfter(LocalDateTime.now())) {
-            throw new InvalidMaintenanceException("La fecha del servicio no puede ser futura");
-        }
-
-        if (command.mileageAtService() <= 0) {
-            throw new InvalidMaintenanceException("El kilometraje del servicio debe ser mayor a cero");
-        }
-
-        if (command.recordedBy() == null || command.recordedBy().isBlank()) {
-            throw new InvalidMaintenanceException("El nombre de quien registra es obligatorio");
-        }
-
         MaintenanceAlert alert = maintenanceAlertRepositoryPort.findById(command.alertId())
                 .orElseThrow(() -> new AlertNotFoundException(command.alertId()));
-
-        UUID vehicleId = alert.getVehicleId();
-        UUID ruleId = alert.getRuleId();
 
         LocalDateTime performedAt = command.performedAt() != null
                 ? command.performedAt()
@@ -53,9 +33,9 @@ public class RegisterMaintenanceService implements RegisterMaintenanceUseCase {
 
         MaintenanceRecord record = new MaintenanceRecord(
                 UUID.randomUUID(),
-                vehicleId,
+                alert.getVehicleId(),
                 command.alertId(),
-                ruleId,
+                alert.getRuleId(),
                 command.serviceType(),
                 command.description(),
                 command.cost(),
