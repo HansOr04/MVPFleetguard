@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://rules-alerts-db:5432/rules_alerts_db
+    url: jdbc:postgresql://fleet-db:5432/fleet_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -26,9 +26,9 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: true
 
-fleet:
-  service:
-    url: http://fleet-service:8080
+fleetguard:
+  events:
+    publisher: rabbitMQEventPublisher
 
 logging:
   level:
