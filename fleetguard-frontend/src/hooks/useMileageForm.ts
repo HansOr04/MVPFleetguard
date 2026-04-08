@@ -76,17 +76,19 @@ export function useMileageForm(
         setLoadingAlerts(false);
       }
     } catch (error: unknown) {
-      const e = error as { status?: number; message?: string; errors?: string[] };
-      if (e.status === 0) {
-        showToast('Sin conexión con el servidor', 'error');
-      } else if (e.status === 404) {
-        showToast('Vehículo no encontrado. Verifica la placa.', 'error');
-      } else if (e.status === 400 && e.errors) {
-        showToast(`Error de validación: ${e.errors.join(', ')}`, 'error');
-      } else {
-        showToast(e.message || 'Error al actualizar el kilometraje', 'error');
-      }
-    } finally {
+          const e = error as { status?: number; message?: string; errors?: string[] };
+          if (e.status === 0) {
+            showToast('Sin conexión con el servidor', 'error');
+          } else if (e.status === 404) {
+            showToast('Vehículo no encontrado. Verifica la placa.', 'error');
+          } else if (e.status === 400 && e.errors && e.errors.length > 0) {
+            // ↑ agregamos .length > 0 — solo entra si hay errores de validación reales
+            showToast(`Error de validación: ${e.errors.join(', ')}`, 'error');
+          } else {
+            // Aquí cae InvalidMileageException con e.message correcto
+            showToast(e.message || 'Error al actualizar el kilometraje', 'error');
+          }
+        } finally {
       setSubmitting(false);
     }
   };

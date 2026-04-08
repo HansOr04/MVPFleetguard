@@ -35,7 +35,6 @@ public class AlertController {
                         .dueAtKm(d.dueAtKm())
                         .build())
                 .toList();
-
         return ResponseEntity.ok(response);
     }
 
@@ -56,7 +55,6 @@ public class AlertController {
                         .dueAtKm(d.dueAtKm())
                         .build())
                 .toList();
-
         return ResponseEntity.ok(response);
     }
 }

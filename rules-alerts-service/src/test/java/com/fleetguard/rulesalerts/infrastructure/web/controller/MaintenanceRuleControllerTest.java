@@ -203,7 +203,7 @@ class MaintenanceRuleControllerTest {
             when(associateVehicleTypeWebMapper.toCommand(any(), any())).thenReturn(
                     new AssociateVehicleTypeUseCase.AssociateVehicleTypeCommand(ruleId, vehicleTypeId));
             when(associateVehicleTypeUseCase.execute(any()))
-                    .thenThrow(new MaintenanceRuleNotFoundException("Regla no encontrada con id: " + ruleId));
+                    .thenThrow(new MaintenanceRuleNotFoundException("Regla no encontrada con ID: " + ruleId));
 
             mockMvc.perform(post("/api/maintenance-rules/{id}/vehicle-types", ruleId)
                             .contentType(MediaType.APPLICATION_JSON)

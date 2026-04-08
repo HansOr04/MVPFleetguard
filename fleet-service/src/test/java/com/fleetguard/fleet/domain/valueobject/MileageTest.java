@@ -31,7 +31,7 @@ class MileageTest {
         void negativeIsRejected() {
             assertThatThrownBy(() -> new Mileage(-1L))
                     .isInstanceOf(InvalidMileageException.class)
-                    .hasMessage("Mileage cannot be negative");
+                    .hasMessage("El kilometraje no puede ser negativo");
         }
     }
 
@@ -80,7 +80,7 @@ class MileageTest {
             Mileage current = new Mileage(5_000L);
             assertThatThrownBy(() -> current.assertNewMileageIsNotLower(new Mileage(4_999L)))
                     .isInstanceOf(InvalidMileageException.class)
-                    .hasMessage("New mileage 4999 cannot be less than current 5000");
+                    .hasMessage("El nuevo kilometraje 4999 no puede ser menor que el actual 5000");
         }
     }
 

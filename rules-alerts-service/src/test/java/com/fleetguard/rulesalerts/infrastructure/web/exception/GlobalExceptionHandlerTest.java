@@ -27,7 +27,7 @@ class GlobalExceptionHandlerTest {
     static class TestController {
         @GetMapping("/rule-not-found")
         public void ruleNotFound() {
-            throw new MaintenanceRuleNotFoundException("Regla no encontrada con id: 123");
+            throw new MaintenanceRuleNotFoundException("Regla no encontrada con ID: 123");
         }
 
         @GetMapping("/alert-not-found")
@@ -84,7 +84,7 @@ class GlobalExceptionHandlerTest {
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.status").value(404))
                     .andExpect(jsonPath("$.error").value("Not found"))
-                    .andExpect(jsonPath("$.message").value("Regla no encontrada con id: 123"));
+                    .andExpect(jsonPath("$.message").value("Regla no encontrada con ID: 123"));
         }
 
         @Test

@@ -32,7 +32,6 @@ public class MileageLog extends AggregateRoot {
         if (recordedBy == null || recordedBy.isBlank()) {
             throw new MissingRecordedByException();
         }
-
         MileageLog log = new MileageLog();
         log.id = UUID.randomUUID();
         log.vehicleId = vehicleId;
@@ -52,7 +51,6 @@ public class MileageLog extends AggregateRoot {
                 mileageValue.getValue(),
                 recordedAt
         ));
-
         return log;
     }
 

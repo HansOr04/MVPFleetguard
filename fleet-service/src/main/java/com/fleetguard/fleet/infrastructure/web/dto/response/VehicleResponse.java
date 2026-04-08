@@ -1,6 +1,9 @@
 package com.fleetguard.fleet.infrastructure.web.dto.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -9,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VehicleResponse {
+
     private UUID id;
     private String plate;
     private String brand;

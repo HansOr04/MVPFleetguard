@@ -78,7 +78,7 @@ class VehicleQueryControllerTest {
             mockMvc.perform(get("/api/vehicles/ZZZ-9999"))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.status").value(404))
-                    .andExpect(jsonPath("$.message").value("Vehicle not found with plate: ZZZ-9999"));
+                    .andExpect(jsonPath("$.message").value("Vehículo no encontrado con la placa: ZZZ-9999"));
         }
     }
 }

@@ -5,6 +5,6 @@ import java.util.UUID;
 public class VehicleTypeNotFoundException extends RuntimeException {
 
     public VehicleTypeNotFoundException(UUID vehicleTypeId) {
-        super("Vehicle type not found with id: " + vehicleTypeId);
+        super("Tipo de vehículo no encontrado con ID: " + vehicleTypeId);
     }
 }

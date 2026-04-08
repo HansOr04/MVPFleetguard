@@ -2,6 +2,7 @@ package com.fleetguard.rulesalerts.application.service;
 
 import com.fleetguard.rulesalerts.application.ports.in.CreateMaintenanceRuleUseCase;
 import com.fleetguard.rulesalerts.application.ports.out.MaintenanceRuleRepositoryPort;
+import com.fleetguard.rulesalerts.domain.exception.DuplicateAssociationException;
 import com.fleetguard.rulesalerts.domain.model.rule.MaintenanceRule;
 import com.fleetguard.rulesalerts.domain.model.rule.MaintenanceRuleConstants;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,11 @@ public class CreateMaintenanceRuleService implements CreateMaintenanceRuleUseCas
 
     @Override
     public CreateMaintenanceRuleResponse execute(CreateMaintenanceRuleCommand command) {
+
+        if (repositoryPort.existsByName(command.name())) {
+            throw new DuplicateAssociationException(
+                    "Ya existe una regla de mantenimiento con el nombre: " + command.name());
+        }
 
         int resolvedThreshold = (command.warningThresholdKm() == null || command.warningThresholdKm() < 1)
                 ? MaintenanceRuleConstants.DEFAULT_WARNING_THRESHOLD_KM

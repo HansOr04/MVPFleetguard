@@ -16,6 +16,7 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class VehicleRepositoryAdapter implements VehicleRepositoryPort {
+
     private final VehicleJpaRepository vehicleRepository;
     private final VehicleTypeJpaRepository vehicleTypeRepository;
 

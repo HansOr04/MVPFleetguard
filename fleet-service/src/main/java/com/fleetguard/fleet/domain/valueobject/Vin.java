@@ -9,7 +9,7 @@ public class Vin {
     public Vin(String value) {
         if (value == null || value.length() != 17) {
             throw new InvalidVinException(
-                    "VIN must be exactly 17 characters, got: " +
+                    "El VIN debe tener exactamente 17 caracteres, se obtuvo: " +
                             (value == null ? "null" : value.length()));
         }
         this.value = value;

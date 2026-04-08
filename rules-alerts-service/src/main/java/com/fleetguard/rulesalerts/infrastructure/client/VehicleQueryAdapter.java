@@ -41,5 +41,6 @@ public class VehicleQueryAdapter implements VehicleQueryPort {
         }
     }
 
-    public record VehicleClientResponse(UUID id, String plate, String status) {}
+    public record VehicleClientResponse(UUID id, String plate, String status) {
+    }
 }

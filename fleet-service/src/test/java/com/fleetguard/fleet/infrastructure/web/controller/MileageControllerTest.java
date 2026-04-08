@@ -98,14 +98,14 @@ class MileageControllerTest {
         void returns400WhenInvalidMileage() throws Exception {
             when(mileageWebMapper.toCommand(any(), any())).thenCallRealMethod();
             when(registerMileageUseCase.execute(any(RegisterMileageCommand.class)))
-                    .thenThrow(new InvalidMileageException("Mileage value must be greater than zero"));
+                    .thenThrow(new InvalidMileageException("El valor del kilometraje debe ser mayor que cero"));
 
             mockMvc.perform(post("/api/vehicles/ABC-1234/mileage")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validRequest())))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.status").value(400))
-                    .andExpect(jsonPath("$.message").value("Mileage value must be greater than zero"));
+                    .andExpect(jsonPath("$.message").value("El valor del kilometraje debe ser mayor que cero"));
         }
 
         @Test
@@ -120,7 +120,7 @@ class MileageControllerTest {
                             .content(objectMapper.writeValueAsString(validRequest())))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.status").value(400))
-                    .andExpect(jsonPath("$.message").value("Vehicle " + vehicleId + " is not active"));
+                    .andExpect(jsonPath("$.message").value("El vehículo " + vehicleId + " no está activo"));
         }
 
         @Test
@@ -135,7 +135,7 @@ class MileageControllerTest {
                             .content(objectMapper.writeValueAsString(validRequest())))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.status").value(404))
-                    .andExpect(jsonPath("$.message").value("Vehicle not found with plate: ABC-1234"));
+                    .andExpect(jsonPath("$.message").value("Vehículo no encontrado con la placa: ABC-1234"));
         }
     }
 }

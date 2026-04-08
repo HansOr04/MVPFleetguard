@@ -1,7 +1,6 @@
 import React from 'react';
 import { MileageLog, MaintenanceAlert } from '@/types';
 import { AlertList } from '@/components/alerts/AlertList';
-import { InfoCard } from '@/components/feedback/InfoCard';
 
 interface MileageResultPanelProps {
   lastResult: MileageLog;

@@ -6,7 +6,7 @@ public class Plate {
 
     public Plate(String value) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Plate cannot be null or empty");
+            throw new IllegalArgumentException("La placa no puede ser nula o vacía");
         }
         this.value = value.toUpperCase();
     }

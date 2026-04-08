@@ -13,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class MaintenanceAlertResponse {
+
     private UUID id;
     private UUID vehicleId;
     private UUID vehicleTypeId;

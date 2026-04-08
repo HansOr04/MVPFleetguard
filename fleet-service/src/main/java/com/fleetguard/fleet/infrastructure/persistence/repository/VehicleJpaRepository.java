@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface VehicleJpaRepository extends JpaRepository<VehicleJpaEntity, UUID> {
+
     Optional<VehicleJpaEntity> findByPlate(String plate);
+
     boolean existsByPlate(String plate);
 }
