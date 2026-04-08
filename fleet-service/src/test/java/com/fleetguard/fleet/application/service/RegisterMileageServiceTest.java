@@ -120,7 +120,7 @@ class RegisterMileageServiceTest {
 
             assertThatThrownBy(() -> service.execute(commandWith(0L)))
                     .isInstanceOf(InvalidMileageException.class)
-                    .hasMessage("Mileage value must be greater than zero");
+                    .hasMessage("El valor del kilometraje debe ser mayor que cero");
 
             verify(mileageLogRepository, never()).save(any());
         }

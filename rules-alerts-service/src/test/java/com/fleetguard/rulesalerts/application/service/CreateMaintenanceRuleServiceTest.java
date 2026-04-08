@@ -43,10 +43,6 @@ class CreateMaintenanceRuleServiceTest {
                 "Oil Change", "OIL", 5000, warningThresholdKm);
     }
 
-    // ─────────────────────────────────────────────
-    // Happy path
-    // ─────────────────────────────────────────────
-
     @Nested
     @DisplayName("Happy path")
     class HappyPath {
@@ -77,16 +73,6 @@ class CreateMaintenanceRuleServiceTest {
             assertThat(captor.getValue().getStatus()).isEqualTo("ACTIVE");
         }
     }
-
-    // ─────────────────────────────────────────────
-    // warningThresholdKm — default resolution
-    // Tabla de decisión:
-    // null      → DEFAULT (500)
-    // 0         → DEFAULT (500)
-    // -1        → DEFAULT (500)
-    // 1         → 1 (válido)
-    // 500       → 500 (válido)
-    // ─────────────────────���───────────────────────
 
     @Nested
     @DisplayName("warningThresholdKm — default resolution")

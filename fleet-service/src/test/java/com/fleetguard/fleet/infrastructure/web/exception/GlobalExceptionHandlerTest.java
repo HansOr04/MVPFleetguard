@@ -36,27 +36,27 @@ class GlobalExceptionHandlerTest {
         @Test
         @DisplayName("InvalidMileageException → 400")
         void invalidMileage() {
-            InvalidMileageException ex = new InvalidMileageException("Mileage cannot be negative");
+            InvalidMileageException ex = new InvalidMileageException("El kilometraje no puede ser negativo");
 
             ResponseEntity<ErrorResponse> response = handler.handleDomainException(ex);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().getStatus()).isEqualTo(400);
-            assertThat(response.getBody().getMessage()).isEqualTo("Mileage cannot be negative");
+            assertThat(response.getBody().getMessage()).isEqualTo("El kilometraje no puede ser negativo");
         }
 
         @Test
         @DisplayName("InvalidVinException → 400")
         void invalidVin() {
-            InvalidVinException ex = new InvalidVinException("VIN must be exactly 17 characters, got: 16");
+            InvalidVinException ex = new InvalidVinException("El VIN debe tener exactamente 17 caracteres, se obtuvo: 16");
 
             ResponseEntity<ErrorResponse> response = handler.handleDomainException(ex);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().getStatus()).isEqualTo(400);
-            assertThat(response.getBody().getMessage()).isEqualTo("VIN must be exactly 17 characters, got: 16");
+            assertThat(response.getBody().getMessage()).isEqualTo("El VIN debe tener exactamente 17 caracteres, se obtuvo: 16");
         }
 
         @Test
@@ -70,7 +70,7 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().getStatus()).isEqualTo(400);
-            assertThat(response.getBody().getMessage()).isEqualTo("Vehicle " + vehicleId + " is not active");
+            assertThat(response.getBody().getMessage()).isEqualTo("El vehículo " + vehicleId + " no está activo");
         }
 
         @Test
@@ -83,7 +83,7 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().getStatus()).isEqualTo(400);
-            assertThat(response.getBody().getMessage()).isEqualTo("Recorded by (driver) is required");
+            assertThat(response.getBody().getMessage()).isEqualTo("El campo 'Registrado por' es obligatorio");
         }
 
         @Test
@@ -122,7 +122,7 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().getStatus()).isEqualTo(404);
-            assertThat(response.getBody().getMessage()).isEqualTo("Vehicle not found with plate: ABC-1234");
+            assertThat(response.getBody().getMessage()).isEqualTo("Vehículo no encontrado con la placa: ABC-1234");
         }
 
         @Test
@@ -136,7 +136,7 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().getStatus()).isEqualTo(404);
-            assertThat(response.getBody().getMessage()).isEqualTo("Vehicle type not found with id: " + typeId);
+            assertThat(response.getBody().getMessage()).isEqualTo("Tipo de vehículo no encontrado con ID: " + typeId);
         }
     }
 
@@ -154,7 +154,7 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
             assertThat(response.getBody()).isNotNull();
             assertThat(response.getBody().getStatus()).isEqualTo(409);
-            assertThat(response.getBody().getMessage()).isEqualTo("A vehicle with plate 'ABC-1234' already exists");
+            assertThat(response.getBody().getMessage()).isEqualTo("Ya existe un vehículo con la placa 'ABC-1234'");
         }
     }
 

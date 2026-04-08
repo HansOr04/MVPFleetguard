@@ -25,7 +25,7 @@ class VinTest {
         void rejects16Chars() {
             assertThatThrownBy(() -> new Vin("1HGCM82633A12345"))
                     .isInstanceOf(InvalidVinException.class)
-                    .hasMessageContaining("got: 16");
+                    .hasMessageContaining("se obtuvo: 16");
         }
 
         @Test
@@ -33,7 +33,7 @@ class VinTest {
         void rejects18Chars() {
             assertThatThrownBy(() -> new Vin("1HGCM82633A123456X"))
                     .isInstanceOf(InvalidVinException.class)
-                    .hasMessageContaining("got: 18");
+                    .hasMessageContaining("se obtuvo: 18");
         }
 
         @Test
@@ -41,7 +41,7 @@ class VinTest {
         void rejectsNull() {
             assertThatThrownBy(() -> new Vin(null))
                     .isInstanceOf(InvalidVinException.class)
-                    .hasMessageContaining("got: null");
+                    .hasMessageContaining("se obtuvo: null");
         }
     }
 

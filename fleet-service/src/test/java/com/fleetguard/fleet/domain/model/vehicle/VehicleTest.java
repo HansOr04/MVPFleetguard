@@ -47,7 +47,7 @@ class VehicleTest {
         void rejectsNullBrand() {
             assertThatThrownBy(() -> Vehicle.create(plate, null, "Hilux", 2023, "Diesel", vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Brand cannot be null or empty");
+                    .hasMessage("La marca no puede ser nula o vacía");
         }
 
         @Test
@@ -55,7 +55,7 @@ class VehicleTest {
         void rejectsBlankBrand() {
             assertThatThrownBy(() -> Vehicle.create(plate, "  ", "Hilux", 2023, "Diesel", vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Brand cannot be null or empty");
+                    .hasMessage("La marca no puede ser nula o vacía");
         }
 
         @Test
@@ -63,7 +63,7 @@ class VehicleTest {
         void rejectsNullModel() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", null, 2023, "Diesel", vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Model cannot be null or empty");
+                    .hasMessage("El modelo no puede ser nulo o vacío");
         }
 
         @Test
@@ -71,7 +71,7 @@ class VehicleTest {
         void rejectsBlankModel() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "  ", 2023, "Diesel", vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Model cannot be null or empty");
+                    .hasMessage("El modelo no puede ser nulo o vacío");
         }
 
         @Test
@@ -79,7 +79,7 @@ class VehicleTest {
         void rejectsNullFuelType() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 2023, null, vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Fuel type cannot be null or empty");
+                    .hasMessage("El tipo de combustible no puede ser nulo o vacío");
         }
 
         @Test
@@ -87,7 +87,7 @@ class VehicleTest {
         void rejectsBlankFuelType() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 2023, "  ", vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Fuel type cannot be null or empty");
+                    .hasMessage("El tipo de combustible no puede ser nulo o vacío");
         }
 
         @Test
@@ -95,7 +95,7 @@ class VehicleTest {
         void rejectsYearZero() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 0, "Diesel", vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Year must be a positive integer");
+                    .hasMessage("El año debe ser un número entero positivo");
         }
 
         @Test
@@ -103,7 +103,7 @@ class VehicleTest {
         void rejectsNegativeYear() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", -1, "Diesel", vin, vehicleType))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Year must be a positive integer");
+                    .hasMessage("El año debe ser un número entero positivo");
         }
 
         @Test
@@ -111,7 +111,7 @@ class VehicleTest {
         void rejectsNullVehicleType() {
             assertThatThrownBy(() -> Vehicle.create(plate, "Toyota", "Hilux", 2023, "Diesel", vin, null))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("VehicleType cannot be null");
+                    .hasMessage("El tipo de vehículo no puede ser nulo");
         }
     }
 
@@ -133,7 +133,7 @@ class VehicleTest {
             Vehicle vehicle = Vehicle.create(plate, "Toyota", "Hilux", 2023, "Diesel", vin, vehicleType);
             assertThatThrownBy(() -> vehicle.updateMileage(new Mileage(0L)))
                     .isInstanceOf(InvalidMileageException.class)
-                    .hasMessage("Mileage value must be greater than zero");
+                    .hasMessage("El valor del kilometraje debe ser mayor que cero");
         }
 
         @Test

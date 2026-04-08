@@ -96,7 +96,7 @@ class VehicleControllerTest {
                             .content(objectMapper.writeValueAsString(validRequest())))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.status").value(409))
-                    .andExpect(jsonPath("$.message").value("A vehicle with plate 'ABC-1234' already exists"));
+                    .andExpect(jsonPath("$.message").value("Ya existe un vehículo con la placa 'ABC-1234'"));
         }
 
         @Test
@@ -111,7 +111,7 @@ class VehicleControllerTest {
                             .content(objectMapper.writeValueAsString(validRequest())))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.status").value(404))
-                    .andExpect(jsonPath("$.message").value("Vehicle type not found with id: " + typeId));
+                    .andExpect(jsonPath("$.message").value("Tipo de vehículo no encontrado con ID: " + typeId));
         }
     }
 }

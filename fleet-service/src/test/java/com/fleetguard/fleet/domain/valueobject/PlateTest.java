@@ -23,7 +23,7 @@ class PlateTest {
         void rejectsInvalidValues(String value) {
             assertThatThrownBy(() -> new Plate(value))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Plate cannot be null or empty");
+                    .hasMessage("La placa no puede ser nula o vacía");
         }
 
         @Test
