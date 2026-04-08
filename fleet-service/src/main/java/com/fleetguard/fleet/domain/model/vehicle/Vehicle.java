@@ -29,7 +29,7 @@ public class Vehicle extends AggregateRoot {
     private VehicleType vehicleType;
 
     public static Vehicle create(Plate plate, String brand, String model,
-            int year, String fuelType, Vin vin, VehicleType vehicleType) {
+                                 int year, String fuelType, Vin vin, VehicleType vehicleType) {
         if (brand == null || brand.isBlank()) {
             throw new IllegalArgumentException("La marca no puede ser nula o vacía");
         }

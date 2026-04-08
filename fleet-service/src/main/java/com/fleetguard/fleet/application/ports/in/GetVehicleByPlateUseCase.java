@@ -17,5 +17,6 @@ public interface GetVehicleByPlateUseCase {
             String status,
             long currentMileage,
             String vehicleTypeName
-    ) {}
+    ) {
+    }
 }

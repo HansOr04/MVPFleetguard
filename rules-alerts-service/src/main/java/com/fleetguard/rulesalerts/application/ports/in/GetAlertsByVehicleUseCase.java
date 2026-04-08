@@ -17,5 +17,6 @@ public interface GetAlertsByVehicleUseCase {
             String status,
             LocalDateTime triggeredAt,
             Long dueAtKm
-    ) {}
+    ) {
+    }
 }

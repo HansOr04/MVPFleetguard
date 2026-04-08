@@ -17,5 +17,6 @@ public interface GetAlertsUseCase {
             String status,
             LocalDateTime triggeredAt,
             Long dueAtKm
-    ) {}
+    ) {
+    }
 }

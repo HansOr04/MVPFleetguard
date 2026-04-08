@@ -10,6 +10,7 @@ import com.fleetguard.fleet.infrastructure.persistence.entity.VehicleJpaEntity;
 import com.fleetguard.fleet.infrastructure.persistence.entity.VehicleTypeJpaEntity;
 
 public class VehicleMapper {
+
     public static VehicleJpaEntity toJpaEntity(Vehicle vehicle) {
         return new VehicleJpaEntity(
                 vehicle.getId(),
@@ -49,14 +50,6 @@ public class VehicleMapper {
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription()
-        );
-    }
-
-    public static VehicleTypeJpaEntity toJpaEntity(VehicleType vehicleType) {
-        return new VehicleTypeJpaEntity(
-                vehicleType.getId(),
-                vehicleType.getName(),
-                vehicleType.getDescription()
         );
     }
 }

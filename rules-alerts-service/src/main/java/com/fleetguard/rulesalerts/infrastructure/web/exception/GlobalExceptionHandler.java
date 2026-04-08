@@ -21,9 +21,9 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final String KEY_STATUS  = "status";
-    private static final String KEY_ERROR   = "error";
-    private static final String KEY_ERRORS  = "errors";
+    private static final String KEY_STATUS = "status";
+    private static final String KEY_ERROR = "error";
+    private static final String KEY_ERRORS = "errors";
     private static final String KEY_MESSAGE = "message";
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 
         return Map.of(
                 KEY_STATUS, HttpStatus.BAD_REQUEST.value(),
-                KEY_ERROR,  "Validation failed",
+                KEY_ERROR, "Validation failed",
                 KEY_ERRORS, errors
         );
     }
@@ -46,8 +46,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaintenanceRuleNotFoundException.class)
     public Map<String, Object> handleMaintenanceRuleNotFound(MaintenanceRuleNotFoundException ex) {
         return Map.of(
-                KEY_STATUS,  HttpStatus.NOT_FOUND.value(),
-                KEY_ERROR,   "Not found",
+                KEY_STATUS, HttpStatus.NOT_FOUND.value(),
+                KEY_ERROR, "Not found",
                 KEY_MESSAGE, ex.getMessage()
         );
     }
@@ -56,8 +56,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AlertNotFoundException.class)
     public Map<String, Object> handleAlertNotFound(AlertNotFoundException ex) {
         return Map.of(
-                KEY_STATUS,  HttpStatus.NOT_FOUND.value(),
-                KEY_ERROR,   "Not found",
+                KEY_STATUS, HttpStatus.NOT_FOUND.value(),
+                KEY_ERROR, "Not found",
                 KEY_MESSAGE, ex.getMessage()
         );
     }
@@ -66,8 +66,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(VehicleNotFoundException.class)
     public Map<String, Object> handleVehicleNotFound(VehicleNotFoundException ex) {
         return Map.of(
-                KEY_STATUS,  HttpStatus.NOT_FOUND.value(),
-                KEY_ERROR,   "Not found",
+                KEY_STATUS, HttpStatus.NOT_FOUND.value(),
+                KEY_ERROR, "Not found",
                 KEY_MESSAGE, ex.getMessage()
         );
     }
@@ -76,8 +76,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateAssociationException.class)
     public Map<String, Object> handleDuplicateAssociation(DuplicateAssociationException ex) {
         return Map.of(
-                KEY_STATUS,  HttpStatus.CONFLICT.value(),
-                KEY_ERROR,   "Conflict",
+                KEY_STATUS, HttpStatus.CONFLICT.value(),
+                KEY_ERROR, "Conflict",
                 KEY_MESSAGE, ex.getMessage()
         );
     }
@@ -86,8 +86,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public Map<String, Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         return Map.of(
-                KEY_STATUS,  HttpStatus.CONFLICT.value(),
-                KEY_ERROR,   "Conflict",
+                KEY_STATUS, HttpStatus.CONFLICT.value(),
+                KEY_ERROR, "Conflict",
                 KEY_MESSAGE, "Ya existe un recurso con esos datos"
         );
     }
@@ -96,8 +96,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidMaintenanceException.class)
     public Map<String, Object> handleInvalidMaintenance(InvalidMaintenanceException ex) {
         return Map.of(
-                KEY_STATUS,  HttpStatus.BAD_REQUEST.value(),
-                KEY_ERROR,   "Bad request",
+                KEY_STATUS, HttpStatus.BAD_REQUEST.value(),
+                KEY_ERROR, "Bad request",
                 KEY_MESSAGE, ex.getMessage()
         );
     }
@@ -107,8 +107,8 @@ public class GlobalExceptionHandler {
     public Map<String, Object> handleGenericException(Exception ex) {
         log.error("Unhandled exception in rules-alerts-service", ex);
         return Map.of(
-                KEY_STATUS,  HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                KEY_ERROR,   "Internal server error",
+                KEY_STATUS, HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                KEY_ERROR, "Internal server error",
                 KEY_MESSAGE, "Error interno del servidor"
         );
     }

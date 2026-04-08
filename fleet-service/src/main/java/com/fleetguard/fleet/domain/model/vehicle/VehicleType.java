@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class VehicleType {
+
     private UUID id;
     private String name;
     private String description;
