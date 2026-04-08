@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: fleet-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/fleet_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    clean-on-validation-error: true
+    validate-on-migrate: true
+
+fleetguard:
+  events:
+    publisher: rabbitMQEventPublisher
+
+logging:
+  level:
+    org.flywaydb: DEBUG
+
+server:
+  port: 8092

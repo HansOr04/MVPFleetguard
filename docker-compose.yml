@@ -1,4 +1,3 @@
-
 services:
 
   fleet-db:
@@ -59,16 +58,10 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://fleet-db:5432/fleet_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: docker
     ports:
-      - "8081:8080"
+      - "8082:8080"
     networks:
       - fleetguard-net
 
@@ -83,16 +76,29 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://rules-alerts-db:5432/rules_alerts_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: docker
     ports:
-      - "8082:8080"
+      - "8083:8080"
+    networks:
+      - fleetguard-net
+
+  frontend:
+    build:
+      context: ./fleetguard-frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_FLEET_SERVICE_URL: http://localhost:3000/api/fleet
+        NEXT_PUBLIC_RULES_SERVICE_URL: http://localhost:3000/api/rules
+    container_name: fleetguard-frontend
+    depends_on:
+      - fleet-service
+      - rules-alerts-service
+    environment:
+      FLEET_SERVICE_URL: http://fleet-service:8080
+      RULES_SERVICE_URL: http://rules-alerts-service:8080
+    ports:
+      - "3000:3000"
     networks:
       - fleetguard-net
 

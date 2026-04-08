@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://rules-alerts-db:5432/rules_alerts_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+fleet:
+  service:
+    url: http://fleet-service:8080
+
+logging:
+  level:
+    org.flywaydb: DEBUG
+
+server:
+  port: 8080
