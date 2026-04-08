@@ -156,6 +156,19 @@ class GlobalExceptionHandlerTest {
             assertThat(response.getBody().getStatus()).isEqualTo(409);
             assertThat(response.getBody().getMessage()).isEqualTo("Ya existe un vehículo con la placa 'ABC-1234'");
         }
+
+        @Test
+        @DisplayName("DuplicateVinException → 409")
+        void duplicateVin() {
+            DuplicateVinException ex = new DuplicateVinException("1HGCM82633A123456");
+
+            ResponseEntity<ErrorResponse> response = handler.handleDuplicateVin(ex);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().getStatus()).isEqualTo(409);
+            assertThat(response.getBody().getMessage()).isEqualTo("El VIN '1HGCM82633A123456' ya existe en el sistema");
+        }
     }
 
     @Nested
