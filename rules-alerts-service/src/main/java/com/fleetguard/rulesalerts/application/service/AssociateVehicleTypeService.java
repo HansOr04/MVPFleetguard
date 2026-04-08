@@ -24,7 +24,7 @@ public class AssociateVehicleTypeService implements AssociateVehicleTypeUseCase 
 
         if (!maintenanceRuleRepositoryPort.existsById(command.ruleId())) {
             throw new MaintenanceRuleNotFoundException(
-                    "Regla de mantenimiento no encontrada con id: " + command.ruleId());
+                    "Regla de mantenimiento no encontrada con ID: " + command.ruleId());
         }
 
         if (assocRepositoryPort.existsByRuleIdAndVehicleTypeId(command.ruleId(), command.vehicleTypeId())) {

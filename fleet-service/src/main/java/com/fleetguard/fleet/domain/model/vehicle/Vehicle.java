@@ -29,21 +29,21 @@ public class Vehicle extends AggregateRoot {
     private VehicleType vehicleType;
 
     public static Vehicle create(Plate plate, String brand, String model,
-                                 int year, String fuelType, Vin vin, VehicleType vehicleType) {
+            int year, String fuelType, Vin vin, VehicleType vehicleType) {
         if (brand == null || brand.isBlank()) {
-            throw new IllegalArgumentException("Brand cannot be null or empty");
+            throw new IllegalArgumentException("La marca no puede ser nula o vacía");
         }
         if (model == null || model.isBlank()) {
-            throw new IllegalArgumentException("Model cannot be null or empty");
+            throw new IllegalArgumentException("El modelo no puede ser nulo o vacío");
         }
         if (fuelType == null || fuelType.isBlank()) {
-            throw new IllegalArgumentException("Fuel type cannot be null or empty");
+            throw new IllegalArgumentException("El tipo de combustible no puede ser nulo o vacío");
         }
         if (year <= 0) {
-            throw new IllegalArgumentException("Year must be a positive integer");
+            throw new IllegalArgumentException("El año debe ser un número entero positivo");
         }
         if (vehicleType == null) {
-            throw new IllegalArgumentException("VehicleType cannot be null");
+            throw new IllegalArgumentException("El tipo de vehículo no puede ser nulo");
         }
 
         Vehicle vehicle = new Vehicle();
@@ -65,7 +65,7 @@ public class Vehicle extends AggregateRoot {
             throw new InactiveVehicleException(this.id);
         }
         if (newMileage.getValue() <= 0) {
-            throw new InvalidMileageException("Mileage value must be greater than zero");
+            throw new InvalidMileageException("El valor del kilometraje debe ser mayor que cero");
         }
         this.currentMileage.assertNewMileageIsNotLower(newMileage);
         this.currentMileage = newMileage;

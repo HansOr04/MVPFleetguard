@@ -8,7 +8,7 @@ public class Mileage {
 
     public Mileage(long value) {
         if (value < 0) {
-            throw new InvalidMileageException("Mileage cannot be negative");
+            throw new InvalidMileageException("El kilometraje no puede ser negativo");
         }
         this.value = value;
     }
@@ -20,8 +20,8 @@ public class Mileage {
     public void assertNewMileageIsNotLower(Mileage newMileage) {
         if (newMileage.value < this.value) {
             throw new InvalidMileageException(
-                    "New mileage " + newMileage.value +
-                            " cannot be less than current " + this.value);
+                    "El nuevo kilometraje " + newMileage.value +
+                            " no puede ser menor que el actual " + this.value);
         }
     }
 
