@@ -13,7 +13,7 @@ CREATE TABLE vehicle
     model           VARCHAR(100) NOT NULL,
     year            INTEGER      NOT NULL,
     fuel_type       VARCHAR(50)  NOT NULL,
-    vin             VARCHAR(17)  NOT NULL,
+    vin             VARCHAR(17)  NOT NULL UNIQUE CHECK (LENGTH(vin) = 17),
     status          VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE',
     current_mileage BIGINT       NOT NULL DEFAULT 0,
     vehicle_type_id UUID         NOT NULL REFERENCES vehicle_type (id)

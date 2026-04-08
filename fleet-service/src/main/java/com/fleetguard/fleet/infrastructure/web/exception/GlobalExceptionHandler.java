@@ -1,5 +1,6 @@
 package com.fleetguard.fleet.infrastructure.web.exception;
 
+import com.fleetguard.fleet.domain.exception.DuplicateVinException;
 import com.fleetguard.fleet.domain.exception.DuplicatePlateException;
 import com.fleetguard.fleet.domain.exception.InactiveVehicleException;
 import com.fleetguard.fleet.domain.exception.InvalidMileageException;
@@ -40,6 +41,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicatePlateException.class)
     public ResponseEntity<ErrorResponse> handleDuplicatePlate(DuplicatePlateException ex) {
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage(),
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(DuplicateVinException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateVin(DuplicateVinException ex) {
         ErrorResponse error = new ErrorResponse(
                 ex.getMessage(),
                 LocalDateTime.now(),
