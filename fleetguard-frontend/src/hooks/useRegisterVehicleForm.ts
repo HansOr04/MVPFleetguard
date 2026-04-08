@@ -1,34 +1,38 @@
-import { useState } from 'react';
-import { vehicleService } from '@/services/vehicle.service';
-import { vehicleValidator } from '@/validators/vehicle.validator';
-import { CreateVehicleDto } from '@/types';
+import { useState } from "react";
+import { vehicleService } from "@/services/vehicle.service";
+import { vehicleValidator } from "@/validators/vehicle.validator";
+import { CreateVehicleDto } from "@/types";
 
 const initialFormData: CreateVehicleDto = {
-  plate: '',
-  vin: '',
-  brand: '',
-  model: '',
-  year: '' as unknown as number,
-  fuelType: '',
-  vehicleTypeId: '',
+  plate: "",
+  vin: "",
+  brand: "",
+  model: "",
+  year: "" as unknown as number,
+  fuelType: "",
+  vehicleTypeId: "",
 };
 
 interface UseRegisterVehicleFormReturn {
   formData: CreateVehicleDto;
   loading: boolean;
   plateError: string;
+  vinError: string;
   isVinValid: boolean;
   isFormValid: boolean;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  handleChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
 }
 
 export function useRegisterVehicleForm(
-  showToast: (message: string, type: 'success' | 'error') => void
+  showToast: (message: string, type: "success" | "error") => void,
 ): UseRegisterVehicleFormReturn {
   const [formData, setFormData] = useState<CreateVehicleDto>(initialFormData);
   const [loading, setLoading] = useState(false);
-  const [plateError, setPlateError] = useState('');
+  const [plateError, setPlateError] = useState("");
+  const [vinError, setVinError] = useState("");
 
   const isVinValid = formData.vin.length === 17;
   const isFormValid =
@@ -40,19 +44,22 @@ export function useRegisterVehicleForm(
     !vehicleValidator.fuelType(formData.fuelType) &&
     !vehicleValidator.vehicleTypeId(formData.vehicleTypeId);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     const parsedValue =
-      name === 'plate'
+      name === "plate"
         ? value.toUpperCase()
-        : name === 'year'
-        ? value === ''
-          ? ''
-          : Number(value)
-        : value;
+        : name === "year"
+          ? value === ""
+            ? ""
+            : Number(value)
+          : value;
 
     setFormData((prev) => ({ ...prev, [name]: parsedValue }));
-    if (name === 'plate') setPlateError('');
+    if (name === "plate") setPlateError("");
+    if (name === "vin") setVinError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,20 +68,46 @@ export function useRegisterVehicleForm(
     setLoading(true);
     try {
       await vehicleService.register(formData);
-      showToast('Vehículo registrado correctamente', 'success');
+      showToast("Vehículo registrado correctamente", "success");
       setFormData(initialFormData);
-      setPlateError('');
+      setPlateError("");
+      setVinError("");
     } catch (error: unknown) {
-      const e = error as { status?: number; message?: string; errors?: string[] };
-      if (e.status === 409) {
-        setPlateError('Esta placa ya está registrada');
-        showToast('Error de registro: Placa duplicada', 'error');
-      } else if (e.status === 0) {
-        showToast('Sin conexión con el servidor', 'error');
-      } else if (e.status === 400 && e.errors && e.errors.length > 0) {
-        showToast(`Error de validación: ${e.errors.join(', ')}`, 'error');
+      const err = error as {
+        status?: number;
+        message?: string;
+        field?: string;
+        errors?: string[];
+      };
+
+      if (err.status === 409) {
+        const msg = (err.message ?? "").toLowerCase();
+        const field = (err.field ?? "").toLowerCase();
+
+        // Primero intentamos usar el campo discriminador explícito (field)
+        // Luego caemos en detección por mensaje
+        const isVinDuplicate = field === "vin" || msg.includes("vin");
+
+        const isPlateDuplicate =
+          field === "plate" ||
+          field === "placa" ||
+          msg.includes("placa") ||
+          msg.includes("plate");
+
+        if (isVinDuplicate) {
+          setVinError("Este VIN ya está registrado en el sistema");
+        } else if (isPlateDuplicate) {
+          setPlateError("Esta placa ya está registrada en el sistema");
+        } else {
+          // Si no podemos discriminar, mostramos el mensaje del servidor directamente
+          showToast(err.message || "Registro duplicado", "error");
+        }
+      } else if (err.status === 0) {
+        showToast("Sin conexión con el servidor", "error");
+      } else if (err.status === 400 && err.errors && err.errors.length > 0) {
+        showToast(`Error de validación: ${err.errors.join(", ")}`, "error");
       } else {
-        showToast(e.message || 'Error al registrar vehículo', 'error');
+        showToast(err.message || "Error al registrar vehículo", "error");
       }
     } finally {
       setLoading(false);
@@ -85,6 +118,7 @@ export function useRegisterVehicleForm(
     formData,
     loading,
     plateError,
+    vinError,
     isVinValid,
     isFormValid,
     handleChange,

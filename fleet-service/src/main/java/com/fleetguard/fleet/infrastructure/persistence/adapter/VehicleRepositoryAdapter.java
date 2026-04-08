@@ -38,6 +38,11 @@ public class VehicleRepositoryAdapter implements VehicleRepositoryPort {
     }
 
     @Override
+    public boolean existsByVin(String vin) {
+        return vehicleRepository.existsByVin(vin);
+    }
+
+    @Override
     public Optional<VehicleType> findVehicleTypeById(UUID id) {
         return vehicleTypeRepository.findById(id)
                 .map(VehicleMapper::toDomain);

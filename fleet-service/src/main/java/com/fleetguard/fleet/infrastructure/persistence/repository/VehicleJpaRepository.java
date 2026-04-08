@@ -11,4 +11,6 @@ public interface VehicleJpaRepository extends JpaRepository<VehicleJpaEntity, UU
     Optional<VehicleJpaEntity> findByPlate(String plate);
 
     boolean existsByPlate(String plate);
+
+    boolean existsByVin(String vin);
 }

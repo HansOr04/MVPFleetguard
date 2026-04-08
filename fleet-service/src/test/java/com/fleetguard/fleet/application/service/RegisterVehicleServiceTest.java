@@ -4,6 +4,7 @@ import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase.Register
 import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase.RegisterVehicleResponse;
 import com.fleetguard.fleet.application.ports.out.VehicleRepositoryPort;
 import com.fleetguard.fleet.domain.exception.DuplicatePlateException;
+import com.fleetguard.fleet.domain.exception.DuplicateVinException;
 import com.fleetguard.fleet.domain.exception.VehicleTypeNotFoundException;
 import com.fleetguard.fleet.domain.model.vehicle.VehicleType;
 import org.junit.jupiter.api.DisplayName;
@@ -71,6 +72,17 @@ class RegisterVehicleServiceTest {
 
             assertThatThrownBy(() -> service.execute(validCommand()))
                     .isInstanceOf(DuplicatePlateException.class);
+
+            verify(vehicleRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("rejects duplicate vin — never calls save")
+        void rejectsDuplicateVin() {
+            when(vehicleRepository.existsByVin("1HGCM82633A123456")).thenReturn(true);
+
+            assertThatThrownBy(() -> service.execute(validCommand()))
+                    .isInstanceOf(DuplicateVinException.class);
 
             verify(vehicleRepository, never()).save(any());
         }
