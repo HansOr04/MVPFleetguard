@@ -16,6 +16,7 @@ export default function RegisterVehiclePage() {
     formData,
     loading,
     plateError,
+    vinError,
     isVinValid,
     isFormValid,
     handleChange,
@@ -41,6 +42,7 @@ export default function RegisterVehiclePage() {
                 plate={formData.plate}
                 vin={formData.vin}
                 plateError={plateError}
+                vinError={vinError}
                 isPlateValid={formData.plate.length > 0}
                 isVinValid={isVinValid}
                 onChange={handleChange}

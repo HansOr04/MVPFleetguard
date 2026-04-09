@@ -3,6 +3,7 @@ package com.fleetguard.fleet.application.service;
 import com.fleetguard.fleet.application.ports.in.RegisterVehicleUseCase;
 import com.fleetguard.fleet.application.ports.out.VehicleRepositoryPort;
 import com.fleetguard.fleet.domain.exception.DuplicatePlateException;
+import com.fleetguard.fleet.domain.exception.DuplicateVinException;
 import com.fleetguard.fleet.domain.exception.VehicleTypeNotFoundException;
 import com.fleetguard.fleet.domain.model.vehicle.Vehicle;
 import com.fleetguard.fleet.domain.model.vehicle.VehicleType;
@@ -24,6 +25,10 @@ public class RegisterVehicleService implements RegisterVehicleUseCase {
 
         if (vehicleRepository.existsByPlate(command.plate())) {
             throw new DuplicatePlateException(command.plate());
+        }
+
+        if (vehicleRepository.existsByVin(command.vin())) {
+            throw new DuplicateVinException(command.vin());
         }
 
         Plate plate = new Plate(command.plate());

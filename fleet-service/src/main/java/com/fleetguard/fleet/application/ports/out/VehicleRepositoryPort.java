@@ -14,6 +14,8 @@ public interface VehicleRepositoryPort {
 
     boolean existsByPlate(String plate);
 
+    boolean existsByVin(String vin);
+
     Optional<VehicleType> findVehicleTypeById(UUID id);
 
     Optional<Vehicle> findById(UUID id);

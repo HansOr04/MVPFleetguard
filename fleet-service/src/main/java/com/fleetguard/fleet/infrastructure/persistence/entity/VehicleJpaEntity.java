@@ -41,7 +41,7 @@ public class VehicleJpaEntity {
     @Column(name = "fuel_type", nullable = false, length = 50)
     private String fuelType;
 
-    @Column(name = "vin", nullable = false, length = 17)
+    @Column(name = "vin", nullable = false, unique = true, length = 17)
     private String vin;
 
     @Column(name = "status", nullable = false, length = 20)
