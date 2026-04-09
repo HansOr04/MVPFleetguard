@@ -81,7 +81,9 @@ jobs:
           context: .
           file: fleet-service/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fleet-service:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/fleet-service:latest
+            ${{ secrets.DOCKER_USERNAME }}/fleet-service:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -91,7 +93,9 @@ jobs:
           context: .
           file: rules-alerts-service/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/rules-alerts-service:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/rules-alerts-service:latest
+            ${{ secrets.DOCKER_USERNAME }}/rules-alerts-service:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -101,7 +105,9 @@ jobs:
           context: ./fleetguard-frontend
           file: fleetguard-frontend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fleetguard-frontend:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/fleetguard-frontend:latest
+            ${{ secrets.DOCKER_USERNAME }}/fleetguard-frontend:${{ github.sha }}
           build-args: |
             NEXT_PUBLIC_FLEET_SERVICE_URL=http://localhost:3000/api/fleet
             NEXT_PUBLIC_RULES_SERVICE_URL=http://localhost:3000/api/rules
